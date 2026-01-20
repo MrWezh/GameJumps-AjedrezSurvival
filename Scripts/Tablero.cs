@@ -34,6 +34,8 @@ public override void _Draw()
                     DrawTextureRect(_texturaCasillaBlanca, rect, false);
                 else
                     DrawTextureRect(_texturaCasillaNegra, rect, false);
+
+                    //hola
             }
         }
     }

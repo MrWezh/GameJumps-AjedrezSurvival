@@ -12,3 +12,5 @@ script = ExtResource("1_jjgbg")
 position = Vector2(349, 374)
 scale = Vector2(0.5, 0.5)
 zoom = Vector2(1.4, 1.4)
+
+[node name="TileMapLayer" type="TileMapLayer" parent="."]
