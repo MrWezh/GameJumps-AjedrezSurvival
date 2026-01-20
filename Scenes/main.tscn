@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://cx52mku8bjscs"]
+
+[ext_resource type="Script" uid="uid://uc3je255myb1" path="res://Scripts/Tablero.cs" id="1_jjgbg"]
+
+[node name="main" type="Node"]
+
+[node name="tablero" type="Node2D" parent="."]
+texture_filter = 1
+script = ExtResource("1_jjgbg")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(349, 374)
+scale = Vector2(0.5, 0.5)
+zoom = Vector2(1.4, 1.4)
