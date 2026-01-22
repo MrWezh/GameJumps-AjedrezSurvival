@@ -11,13 +11,13 @@ config_version=5
 [application]
 
 config/name="GameJump_AjedrezSurvival"
-run/main_scene="uid://cx52mku8bjscs"
+run/main_scene="uid://thnebmabvmgo"
 config/features=PackedStringArray("4.5", "C#", "Forward Plus")
 config/icon="res://Assets/icon.svg"
 
 [display]
 
-window/size/viewport_width=1920
+window/size/viewport_width=1280
 window/size/viewport_height=1080
 
 [dotnet]
