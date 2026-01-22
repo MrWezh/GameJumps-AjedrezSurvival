@@ -3,18 +3,21 @@
 [ext_resource type="Script" uid="uid://uc3je255myb1" path="res://Scripts/Board.cs" id="1_2wvcj"]
 [ext_resource type="Texture2D" uid="uid://berta8c2x37g4" path="res://Assets/Textures/Captura de pantalla de 2026-01-22 15-55-28.png" id="2_uh3b8"]
 
-[node name="Board" type="Sprite2D"]
+[node name="Board" type="Sprite2D" node_paths=PackedStringArray("_pieces")]
 script = ExtResource("1_2wvcj")
+_pieces = NodePath("Pieces")
 
-[node name="Pieces" type="Node" parent="."]
+[node name="Pieces" type="Node2D" parent="."]
+top_level = true
+texture_filter = 1
 
-[node name="Dots" type="Node" parent="."]
+[node name="Dots" type="Node2D" parent="."]
 
 [node name="Turn" type="Sprite2D" parent="."]
-position = Vector2(255, 4)
-scale = Vector2(0.5, 0.5)
+position = Vector2(-60.000015, 67.999954)
+scale = Vector2(0.4980237, 0.49851623)
 texture = ExtResource("2_uh3b8")
 
 [node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(247, 11)
+position = Vector2(-60, 60)
 zoom = Vector2(1.5, 1.5)

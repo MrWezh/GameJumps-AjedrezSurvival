@@ -5,7 +5,7 @@ using System;
 public partial class Board : Sprite2D
 {
     private const int BOARD_SIZE = 8;
-    private const int CELL_WIDTH = 60;
+    private const int CELL_WIDTH = 62;
 
     private Pieces _piecesTexture;
 
@@ -25,8 +25,8 @@ public partial class Board : Sprite2D
     private bool _isWhiteTurn = false;
         
     [Export]
-    private Node _pieces;
-    private Node _dots;
+    private Node2D _pieces;
+    private Node2D _dots;
     private Sprite2D _turn;
 
 
@@ -34,13 +34,14 @@ public partial class Board : Sprite2D
     {
         _piecesTexture = new Pieces();
 
-        _pieces = GetNode<Node>("Pieces");
-        _dots = GetNode<Node>("Dots");
+        _pieces = GetNode<Node2D>("Pieces");
+        _dots = GetNode<Node2D>("Dots");
         _turn = GetNode<Sprite2D>("Turn");
         _state = StateMachine.None;
         _selectedPiece = new Vector2I(0, 0);
 
         InitializeBoard();
+        display_board();
     }
 
     public void InitializeBoard()
@@ -54,49 +55,52 @@ public partial class Board : Sprite2D
             { 0, 0, 0, 0, 0, 0, 0, 0 },
             { 0, 0, 0, 0, 0, 0, 0, 0 },
             { 0 ,0 ,0, 0, 0 ,0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0 }
+            { 0, 0, 0, 0, -1, 0, 0, 0 }
         };
     }
 
     public void display_board()
     {
-        
-
         for (int row = 0; row < BOARD_SIZE; row++)
         {
             for (int col = 0; col < BOARD_SIZE; col++)
             {
-                Node2D holder = (Node2D)_piecesTexture.TEXTURE_PLACEHOLDER.Instantiate();
+                Sprite2D holder = (Sprite2D)_piecesTexture.TEXTURE_PLACEHOLDER.Instantiate();
 
-                _pieces.AddChild(holder);
+                holder.Position = new Vector2(
+                    col * CELL_WIDTH + (CELL_WIDTH/2) - (CELL_WIDTH * 5),
+                    row * CELL_WIDTH + (CELL_WIDTH/2) - (CELL_WIDTH * 3)
+                    );
 
                 int piece = _board[row, col];
                 if (piece != 0)
                 {
-                    Sprite2D pieceSprite = new Sprite2D();
+                    //Sprite2D pieceSprite = new Sprite2D();
                     switch (piece)
                     {
                         case 1:
-                            pieceSprite.Texture = _piecesTexture.blackBishop;
+                            holder.Texture = _piecesTexture.ResizeTexture(_piecesTexture.BlackPawn);
+                            break;
+                        case -1:
+                            holder.Texture = _piecesTexture.mainCharacterTexture;
                             break;
                         case 2:
-                            pieceSprite.Texture = _piecesTexture.BlackRook;
+                            holder.Texture = _piecesTexture.BlackRook;
                             break;
                         case 3:
-                            pieceSprite.Texture = _piecesTexture.BlackKnight;
+                            holder.Texture = _piecesTexture.BlackKnight;
                             break;
                         case 4:
-                            pieceSprite.Texture = _piecesTexture.BlackPawn;
+                            holder.Texture = _piecesTexture.blackBishop;
                             break;
                         case 5:
-                            pieceSprite.Texture = _piecesTexture.BlackQueen;
+                            holder.Texture = _piecesTexture.BlackQueen;
                             break;
                         case 6:
-                            pieceSprite.Texture = _piecesTexture.BlackKing;
+                            holder.Texture = _piecesTexture.BlackKing;
                             break;
                     }
-                    pieceSprite.Position = new Vector2(col * CELL_WIDTH, row * CELL_WIDTH);
-                    _pieces.AddChild(pieceSprite);
+                    _pieces.AddChild(holder);
                 }
             }
         }
