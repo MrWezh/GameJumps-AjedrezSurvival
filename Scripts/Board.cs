@@ -2,14 +2,19 @@ using Godot;
 using Godot.NativeInterop;
 using System;
 
+
 public partial class Board : Sprite2D
 {
     private const int BOARD_SIZE = 8;
-    private const int CELL_WIDTH = 62;
+    private const int CELL_WIDTH = 18;
 
     private Pieces _piecesTexture;
 
       private int[,] _board;
+
+      bool white = true;
+      bool  state = true;
+      int[] moves = { };
 
     enum StateMachine
     {
@@ -68,8 +73,8 @@ public partial class Board : Sprite2D
                 Sprite2D holder = (Sprite2D)_piecesTexture.TEXTURE_PLACEHOLDER.Instantiate();
 
                 holder.Position = new Vector2(
-                    col * CELL_WIDTH + (CELL_WIDTH/2) - (CELL_WIDTH * 5),
-                    row * CELL_WIDTH + (CELL_WIDTH/2) - (CELL_WIDTH * 3)
+                    col * CELL_WIDTH + (CELL_WIDTH/2),
+                    row * CELL_WIDTH + (CELL_WIDTH/2)
                     );
 
                 int piece = _board[row, col];
@@ -116,6 +121,31 @@ public partial class Board : Sprite2D
 
     public override void _Input(InputEvent @event)
     {
-        
-    }
+        if (@event is InputEventMouseButton mouseEvent && mouseEvent.IsPressed())
+        {
+         
+                if (mouseEvent.ButtonIndex == MouseButton.Left)
+{
+                    if (is_mouse_out())
+                        return; 
+                Vector2 mousePos = GetGlobalMousePosition();
+                Vector2 PosX = mousePos.Snapped(new Vector2(GetGlobalMousePosition().X, 0))/CELL_WIDTH;
+                Vector2 PosY = mousePos.Snapped(new Vector2(GetGlobalMousePosition().Y, 0))/CELL_WIDTH;
+
+                int var1 = (int) PosX.X;
+                int var2 = (int) PosY.Y*(-1);
+
+                GD.Print(var1 +" "+ var2);
 }
+            }          
+        }
+
+        public  bool is_mouse_out()
+    {
+
+        if (GetGlobalMousePosition().X < 0 || GetGlobalMousePosition().X >  496|| GetGlobalMousePosition().Y > 0 || GetGlobalMousePosition().Y < -496)
+            return true;
+        return false;
+    }
+    }
+
