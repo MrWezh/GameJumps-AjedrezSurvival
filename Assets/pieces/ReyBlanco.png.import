@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dplfxfgvqay48"
-path="res://.godot/imported/black_pieces.png-470c6300d176ad1a26aee3bfae3dd2d6.ctex"
+uid="uid://dj05b7y4868wj"
+path="res://.godot/imported/ReyBlanco.png-7b2cf0ef4c242d236038cd2da2ea3f99.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/pieces/black_pieces.png"
-dest_files=["res://.godot/imported/black_pieces.png-470c6300d176ad1a26aee3bfae3dd2d6.ctex"]
+source_file="res://Assets/pieces/ReyBlanco.png"
+dest_files=["res://.godot/imported/ReyBlanco.png-7b2cf0ef4c242d236038cd2da2ea3f99.ctex"]
 
 [params]
 

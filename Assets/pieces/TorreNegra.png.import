@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bak8n4xhpr2d"
-path="res://.godot/imported/bishop_00.png-d270ce33403992fd4a46e5d8a320fa0b.ctex"
+uid="uid://cgqyeke46vs2w"
+path="res://.godot/imported/TorreNegra.png-e0be55992f72687da7a57ce758a4276c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/pieces/bishop/bishop_00.png"
-dest_files=["res://.godot/imported/bishop_00.png-d270ce33403992fd4a46e5d8a320fa0b.ctex"]
+source_file="res://Assets/pieces/TorreNegra.png"
+dest_files=["res://.godot/imported/TorreNegra.png-e0be55992f72687da7a57ce758a4276c.ctex"]
 
 [params]
 

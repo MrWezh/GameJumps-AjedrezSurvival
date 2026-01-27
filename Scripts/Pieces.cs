@@ -4,11 +4,17 @@ using System;
 public partial class Pieces : Node
 {
 
+		public void _ready()
+	{
+	}
+
+
+	// funcion para redimensionar texturas
 	public Texture2D ResizeTexture(Texture2D texture)
     {
         // Crear una nueva imagen redimensionada
         Image image = texture.GetImage();
-        image.Resize(48, 48, Image.Interpolation.Lanczos);
+        image.Resize(18, 18, Image.Interpolation.Lanczos);
         
         // Crear nueva textura con la imagen redimensionada
         ImageTexture resizedTexture = ImageTexture.CreateFromImage(image);
@@ -16,24 +22,26 @@ public partial class Pieces : Node
         // Aplicar la nueva textura
         return resizedTexture;
     }
+	// cargar texturas de las piezas
+
     public Texture2D mainCharacterTexture = 
-	ResourceLoader.Load<Texture2D>("res://Assets/pieces/king/king_00.png");
+	ResourceLoader.Load<Texture2D>("res://Assets/pieces/ReyBlanco.png");
 
 	public Texture2D blackBishop = 
-	ResourceLoader.Load<Texture2D>("res://Assets/pieces/bishop/bishop_01.png");
+	ResourceLoader.Load<Texture2D>("res://Assets/pieces/AlfilNegro.png");
 	
 	
 	public Texture2D BlackKing =
-	ResourceLoader.Load<Texture2D>("res://Assets/pieces/king/king_01.png");
+	ResourceLoader.Load<Texture2D>("res://Assets/pieces/ReyNegro.png");
 
 	public Texture2D BlackKnight =
-	ResourceLoader.Load<Texture2D>("res://Assets/pieces/knight/knight_01.png");
+	ResourceLoader.Load<Texture2D>("res://Assets/pieces/CaballoNegro.png");
 	public Texture2D BlackPawn =
-	ResourceLoader.Load<Texture2D>("res://Assets/pieces/bishop/PeonNegro.png");
+	ResourceLoader.Load<Texture2D>("res://Assets/pieces/PeonNegro.png");
 	public Texture2D BlackQueen =
-	ResourceLoader.Load<Texture2D>("res://Assets/pieces/queen/queen_01.png");
+	ResourceLoader.Load<Texture2D>("res://Assets/pieces/ReinaNegraNegro.png");
 	public Texture2D BlackRook =
-	ResourceLoader.Load<Texture2D>("res://Assets/pieces/rook/rook_01.png");
+	ResourceLoader.Load<Texture2D>("res://Assets/pieces/TorreNegra.png");
 
 	/*
 	pieces
@@ -58,11 +66,7 @@ public partial class Pieces : Node
 
 
 	   
-	public void _ready()
-	{
-		
 
-	}
 
 
 }

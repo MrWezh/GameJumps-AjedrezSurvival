@@ -6,7 +6,7 @@ using System;
 public partial class Board : Sprite2D
 {
     private const int BOARD_SIZE = 8;
-    private const int CELL_WIDTH = 18;
+    private const int CELL_WIDTH = 42;
 
     private Pieces _piecesTexture;
 
@@ -46,7 +46,7 @@ public partial class Board : Sprite2D
         _selectedPiece = new Vector2I(0, 0);
 
         InitializeBoard();
-        display_board();
+        //display_board();
     }
 
     public void InitializeBoard()
@@ -63,8 +63,9 @@ public partial class Board : Sprite2D
             { 0, 0, 0, 0, -1, 0, 0, 0 }
         };
     }
-
-    public void display_board()
+    //Funcion para mostrar las piezas en el tablero
+    
+   public void display_board()
     {
         for (int row = 0; row < BOARD_SIZE; row++)
         {
@@ -74,20 +75,19 @@ public partial class Board : Sprite2D
 
                 holder.Position = new Vector2(
                     col * CELL_WIDTH + (CELL_WIDTH/2),
-                    row * CELL_WIDTH + (CELL_WIDTH/2)
+                    row * CELL_WIDTH + (CELL_WIDTH/2)*-1
                     );
 
                 int piece = _board[row, col];
                 if (piece != 0)
                 {
-                    //Sprite2D pieceSprite = new Sprite2D();
                     switch (piece)
                     {
                         case 1:
-                            holder.Texture = _piecesTexture.ResizeTexture(_piecesTexture.BlackPawn);
+                            holder.Texture = _piecesTexture.BlackPawn;
                             break;
                         case -1:
-                            holder.Texture = _piecesTexture.mainCharacterTexture;
+                           holder.Texture = _piecesTexture.mainCharacterTexture;
                             break;
                         case 2:
                             holder.Texture = _piecesTexture.BlackRook;
@@ -114,7 +114,7 @@ public partial class Board : Sprite2D
 	
 	public override void _Process(double delta)
 	{
-        display_board();
+      
 	} 
 
 
@@ -129,6 +129,7 @@ public partial class Board : Sprite2D
                     if (is_mouse_out())
                         return; 
                 Vector2 mousePos = GetGlobalMousePosition();
+
                 Vector2 PosX = mousePos.Snapped(new Vector2(GetGlobalMousePosition().X, 0))/CELL_WIDTH;
                 Vector2 PosY = mousePos.Snapped(new Vector2(GetGlobalMousePosition().Y, 0))/CELL_WIDTH;
 
@@ -143,7 +144,7 @@ public partial class Board : Sprite2D
         public  bool is_mouse_out()
     {
 
-        if (GetGlobalMousePosition().X < 0 || GetGlobalMousePosition().X >  496|| GetGlobalMousePosition().Y > 0 || GetGlobalMousePosition().Y < -496)
+        if (GetGlobalMousePosition().X < 0 || GetGlobalMousePosition().X >  328|| GetGlobalMousePosition().Y > 0 || GetGlobalMousePosition().Y < -328)
             return true;
         return false;
     }

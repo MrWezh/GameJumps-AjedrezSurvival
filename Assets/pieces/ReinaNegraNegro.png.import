@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cyxbgnr6047m2"
-path="res://.godot/imported/rook_01.png-760caec6ed0acfd2e8edb62103b48e5d.ctex"
+uid="uid://6i4omn2m1wk8"
+path="res://.godot/imported/ReinaNegraNegro.png-2d8cd99d345b7bb961546efa77fbefc1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/pieces/rook/rook_01.png"
-dest_files=["res://.godot/imported/rook_01.png-760caec6ed0acfd2e8edb62103b48e5d.ctex"]
+source_file="res://Assets/pieces/ReinaNegraNegro.png"
+dest_files=["res://.godot/imported/ReinaNegraNegro.png-2d8cd99d345b7bb961546efa77fbefc1.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cja768esfvet8"
-path="res://.godot/imported/king_00.png-3324f48489c75174a61a90b03d9c57ee.ctex"
+uid="uid://dwol44783j2wl"
+path="res://.godot/imported/AlfilNegro.png-2fa3827c020b3cd159006d328bc4f4ff.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/pieces/king/king_00.png"
-dest_files=["res://.godot/imported/king_00.png-3324f48489c75174a61a90b03d9c57ee.ctex"]
+source_file="res://Assets/pieces/AlfilNegro.png"
+dest_files=["res://.godot/imported/AlfilNegro.png-2fa3827c020b3cd159006d328bc4f4ff.ctex"]
 
 [params]
 
