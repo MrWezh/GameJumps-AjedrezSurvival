@@ -21,6 +21,7 @@ public partial class Board : Sprite2D
     private Vector2I _selectedPiece = new Vector2I(0, 0);
     private bool _isWhiteTurn = false;
     private int _turns = 5;
+    private int _maxEnemics = 0;
     [Export]
     private Node2D _pieces;
 
@@ -53,12 +54,50 @@ public partial class Board : Sprite2D
 
     public void SpawnEnemyPiece()
     {
-
-        for (int i = 0; i < 5 + (_turns/5); i++)
+        if (LeerBordes(_board) < 1)
         {
-            RandomPieceSpawn();
+            return;
+        }
+        else if (LeerBordes(_board) < 5 + (_turns/5))
+        {
+            for (int i = 0; i < LeerBordes(_board); i++)
+            {
+                RandomPieceSpawn();
+            }
+            return;
+        }
+        else
+        {
+            for (int i = 0; i < 5 + (_turns/5); i++)
+            {
+                RandomPieceSpawn();
+            }
         }
     }
+    static int LeerBordes(int[,] matriz)
+    {
+        int filas = matriz.GetLength(0);
+        int cols = matriz.GetLength(1);
+        int casillasDisponibles = 0;
+        
+        for (int i = 0; i < filas; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                // Es borde si está en primera/última fila o primera/última columna
+                if (i == 0 || i == filas - 1 || j == 0 || j == cols - 1)
+                {
+                    if (matriz[i, j] == 0)
+                    {
+                        casillasDisponibles++;
+                    }
+                }
+            }
+        }
+
+        return casillasDisponibles;
+    }
+
 
     public void RandomPieceSpawn()  
     {
