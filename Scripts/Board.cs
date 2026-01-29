@@ -35,7 +35,7 @@ public partial class Board : Node2D
     private Node2D _pieces;
     [Export]
     private Node2D _dots;
-    
+
     private Sprite2D _turn;
 
 
@@ -275,13 +275,14 @@ public partial class Board : Node2D
         // identificar la pieza seleccionada
         int row = Math.Abs((int)_selectedPiece.Y);
         int col = Math.Abs((int)_selectedPiece.X);
+        // mostrar los movimientos según la pieza seleccionada
         switch (_board[row, col])
         {
             case 1:
-                GD.Print("Pawn selected");
+                _moves = get_pawn_moves();
                 break;
             case 2:
-                GD.Print("Knight selected");
+                _moves = get_knight_moves();
                 break;
             case 3:
                 _moves = get_bishop_moves();
@@ -290,50 +291,81 @@ public partial class Board : Node2D
                 _moves = get_rook_moves();
                 break;
             case 5:
-                GD.Print("Queen selected");
+                _moves = get_queen_moves();
                 break;
             case 6:
-                GD.Print("King selected");
+                _moves = get_king_moves();
                 break;
         }
         return _moves;
     }
 
-  
-    // movimientos de la torre
-   public List<Vector2> get_rook_moves()
+     public List<Vector2> get_pawn_moves()
     {
         List<Vector2> _moves = new List<Vector2>();
-        Vector2[] directions = new Vector2[] { new Vector2(0,1), new Vector2(1,0), new Vector2(0,-1), new Vector2(-1,0) };
+        Vector2[] directions = new Vector2[] { new Vector2(0, 1), new Vector2(1, 0), new Vector2(0, -1), new Vector2(-1, 0) };
 
         Vector2 start = new Vector2(_selectedPiece.X, _selectedPiece.Y); // X = col, Y = row
 
         foreach (Vector2 dir in directions)
         {
             Vector2 nextPos = start + dir;
-            while (isValidPosition(nextPos))
+            if (isValidPosition(nextPos))
             {
                 if (is_empty(nextPos))
                 {
-                    _moves.Add(new Vector2(nextPos.X, nextPos.Y));
+                    _moves.Add(nextPos);
                 }
                 else
                 {
                     int col = (int)nextPos.X;
                     int row = (int)nextPos.Y;
-                    if (black && _board[row, col] > 0)
+                    if (black && _board[row, col] > 0) // Si hay pieza enemiga
                     {
-                        _moves.Add(new Vector2(nextPos.X, nextPos.Y));
+                        _moves.Add(nextPos);
                     }
-                    break;
                 }
-                nextPos += dir;
+            }
+        }
+        return _moves;
+    }
+    // movimientos del caballo
+      public List<Vector2> get_knight_moves()
+    {
+        // movimientos posibles del caballo
+        List<Vector2> _moves = new List<Vector2>();
+        Vector2[] directions = new Vector2[] {
+                new Vector2(2, 1), new Vector2(1, 2),
+                new Vector2(-1, 2), new Vector2(-2, 1), 
+                new Vector2(-2, -1), new Vector2(-1, -2), 
+                new Vector2(1, -2), new Vector2(2, -1) };
+
+        Vector2 start = new Vector2(_selectedPiece.X, _selectedPiece.Y); // X = col, Y = row
+
+        foreach (Vector2 dir in directions)
+        {
+            Vector2 nextPos = start + dir;
+            if (isValidPosition(nextPos))
+            {
+                if (is_empty(nextPos))
+                {
+                    _moves.Add(nextPos);
+                }
+                else
+                {
+                    int col = (int)nextPos.X;
+                    int row = (int)nextPos.Y;
+                    if (black && _board[row, col] > 0) // Si hay pieza enemiga
+                    {
+                        _moves.Add(nextPos);
+                    }
+                }
             }
         }
         return _moves;
     }
 
-  public List<Vector2> get_bishop_moves()
+      public List<Vector2> get_bishop_moves()
     {
         List<Vector2> _moves = new List<Vector2>();
         Vector2[] directions = new Vector2[] { new Vector2(1,1), new Vector2(1,-1), new Vector2(-1,1), new Vector2(-1,-1) };
@@ -364,6 +396,113 @@ public partial class Board : Node2D
         }
         return _moves;
     }
+
+    // movimientos de la torre
+   public List<Vector2> get_rook_moves()
+    {
+        List<Vector2> _moves = new List<Vector2>();
+        Vector2[] directions = new Vector2[] { 
+            new Vector2(0,1), new Vector2(1,0), 
+            new Vector2(0,-1), new Vector2(-1,0)};
+
+        Vector2 start = new Vector2(_selectedPiece.X, _selectedPiece.Y); // X = col, Y = row
+
+        foreach (Vector2 dir in directions)
+        {
+            Vector2 nextPos = start + dir;
+            while (isValidPosition(nextPos))
+            {
+                if (is_empty(nextPos))
+                {
+                    _moves.Add(new Vector2(nextPos.X, nextPos.Y));
+                }
+                else
+                {
+                    int col = (int)nextPos.X;
+                    int row = (int)nextPos.Y;
+                    if (black && _board[row, col] > 0)
+                    {
+                        _moves.Add(new Vector2(nextPos.X, nextPos.Y));
+                    }
+                    break;
+                }
+                nextPos += dir;
+            }
+        }
+        return _moves;
+    }
+
+      public List<Vector2> get_queen_moves()
+    {
+        List<Vector2> _moves = new List<Vector2>();
+        Vector2[] directions = new Vector2[] { 
+            new Vector2(1,1), new Vector2(1,-1), 
+            new Vector2(-1,1), new Vector2(-1,-1), 
+            new Vector2(0,1), new Vector2(1,0), 
+            new Vector2(0,-1), new Vector2(-1,0)};
+
+        Vector2 start = new Vector2(_selectedPiece.X, _selectedPiece.Y); // X = col, Y = row
+
+        foreach (Vector2 dir in directions)
+        {
+            Vector2 nextPos = start + dir;
+            while (isValidPosition(nextPos))
+            {
+                if (is_empty(nextPos))
+                {
+                    _moves.Add(new Vector2(nextPos.X, nextPos.Y));
+                }
+                else
+                {
+                    int col = (int)nextPos.X;
+                    int row = (int)nextPos.Y;
+                    if (black && _board[row, col] > 0)
+                    {
+                        _moves.Add(new Vector2(nextPos.X, nextPos.Y));
+                    }
+                    break;
+                }
+                nextPos += dir;
+            }
+        }
+        return _moves;
+    }
+
+      public List<Vector2> get_king_moves()
+    {
+        List<Vector2> _moves = new List<Vector2>();
+        Vector2[] directions = new Vector2[] { 
+            new Vector2(1,1), new Vector2(1,-1), 
+            new Vector2(-1,1), new Vector2(-1,-1), 
+            new Vector2(0,1), new Vector2(1,0), 
+            new Vector2(0,-1), new Vector2(-1,0)};
+
+        Vector2 start = new Vector2(_selectedPiece.X, _selectedPiece.Y); // X = col, Y = row
+
+        foreach (Vector2 dir in directions)
+        {
+            Vector2 nextPos = start + dir;
+            if (isValidPosition(nextPos))
+            {
+                if (is_empty(nextPos))
+                {
+                    _moves.Add(new Vector2(nextPos.X, nextPos.Y));
+                }
+                else
+                {
+                    int col = (int)nextPos.X;
+                    int row = (int)nextPos.Y;
+                    if (black && _board[row, col] > 0)
+                    {
+                        _moves.Add(new Vector2(nextPos.X, nextPos.Y));
+                    }
+                    break;
+                }
+            }
+        }
+        return _moves;
+    }
+
 
     public bool isValidPosition(Vector2 pos)
     {
@@ -403,7 +542,7 @@ public partial class Board : Node2D
                 int col = (int)local.X / CELL_WIDTH;
                 int row = (int)local.Y / CELL_WIDTH;
 
-                GD.Print(row, ",", col);
+                GD.Print(row, ",", col, ":", _board[row,  col]);
 
                 if (!state && (black && _board[row, col] > 0))
                 {
@@ -448,5 +587,3 @@ public partial class Board : Node2D
         return false;
     }
 }
-
-

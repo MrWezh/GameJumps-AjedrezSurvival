@@ -3,9 +3,10 @@
 [ext_resource type="Script" uid="uid://uc3je255myb1" path="res://Scripts/Board.cs" id="1_2wvcj"]
 [ext_resource type="Texture2D" uid="uid://berta8c2x37g4" path="res://Assets/Textures/Captura de pantalla de 2026-01-22 15-55-28.png" id="2_uh3b8"]
 
-[node name="Board" type="Node2D" node_paths=PackedStringArray("_pieces")]
+[node name="Board" type="Node2D" node_paths=PackedStringArray("_pieces", "_dots")]
 script = ExtResource("1_2wvcj")
 _pieces = NodePath("Pieces")
+_dots = NodePath("Dots")
 
 [node name="BoardSprite" type="Sprite2D" parent="."]
 texture_filter = 1
