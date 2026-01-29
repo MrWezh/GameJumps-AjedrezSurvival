@@ -1,27 +1,23 @@
-[gd_scene load_steps=3 format=3 uid="uid://thnebmabvmgo"]
+[gd_scene load_steps=3 format=3 uid="uid://c7kdiwl4ek353"]
 
 [ext_resource type="Script" uid="uid://uc3je255myb1" path="res://Scripts/Board.cs" id="1_2wvcj"]
 [ext_resource type="Texture2D" uid="uid://berta8c2x37g4" path="res://Assets/Textures/Captura de pantalla de 2026-01-22 15-55-28.png" id="2_uh3b8"]
 
-[node name="Board" type="Sprite2D" node_paths=PackedStringArray("_pieces", "_dots")]
-texture_filter = 1
+[node name="Board" type="Node2D" node_paths=PackedStringArray("_pieces")]
 script = ExtResource("1_2wvcj")
 _pieces = NodePath("Pieces")
-_dots = NodePath("Dots")
 
 [node name="BoardSprite" type="Sprite2D" parent="."]
-<<<<<<< HEAD
-position = Vector2(167.8, 167.8)
-=======
+texture_filter = 1
 position = Vector2(168, 168)
->>>>>>> 96df82c0a06916d586faf820743211dcdd2b8563
 scale = Vector2(0.333, 0.333)
 texture = ExtResource("2_uh3b8")
 
 [node name="Pieces" type="Node2D" parent="."]
 texture_filter = 1
 
+[node name="Dots" type="Node2D" parent="."]
+
 [node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(168, 168)
-scale = Vector2(2, 2)
-zoom = Vector2(2.5, 2.5)
+offset = Vector2(168, 168)
+zoom = Vector2(1.7, 1.7)

@@ -1,14 +1,9 @@
 using System;
-<<<<<<< HEAD
-using Godot;
-=======
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
+using Godot;
 
->>>>>>> 96df82c0a06916d586faf820743211dcdd2b8563
 
-public partial class Board : Sprite2D
+public partial class Board : Node2D
 {
     Random random = new Random();
     private const int BOARD_SIZE = 8;
@@ -17,36 +12,19 @@ public partial class Board : Sprite2D
     private Pieces _piecesTexture;
     private int[,] _board;
 
-<<<<<<< HEAD
-    private enum StateMachine
-=======
-    private int[,] _board;
-
     public bool black = true;
     public bool state = false;
     public List<Vector2> moves;
 
     enum StateMachine
->>>>>>> 96df82c0a06916d586faf820743211dcdd2b8563
     {
         Moving,
         Moved,
         None
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> 96df82c0a06916d586faf820743211dcdd2b8563
     private StateMachine _state;
     private Vector2I _selectedPiece = new Vector2I(0, 0);
     private bool _isWhiteTurn = false;
-<<<<<<< HEAD
-    private int _turns = 5;
-    private int _maxEnemics = 0;
-    [Export]
-    private Node2D _pieces;
-
-=======
     
     private int _turns = 20;
     private int _maxEnemics = 0;
@@ -57,122 +35,30 @@ public partial class Board : Sprite2D
     private Node2D _pieces;
     [Export]
     private Node2D _dots;
+    
     private Sprite2D _turn;
 
 
->>>>>>> 96df82c0a06916d586faf820743211dcdd2b8563
     public override void _Ready()
     {
         _piecesTexture = new Pieces();
         _selectedPiece = new Vector2I(-1, -1);
         _pieces = GetNode<Node2D>("Pieces");
-<<<<<<< HEAD
-        _state = StateMachine.None;
-
-        InitializeBoard();
-        SpawnEnemyPiece();
-=======
         _dots = GetNode<Node2D>("Dots");
         _state = StateMachine.None;
 
         InitializeBoard();
->>>>>>> 96df82c0a06916d586faf820743211dcdd2b8563
+        SpawnEnemyPiece();
         DisplayBoard();
-    }
 
+    }
     public void InitializeBoard()
     {
-<<<<<<< HEAD
         _board = new int[BOARD_SIZE, BOARD_SIZE]
-=======
-        _board = new int[8, 8]
->>>>>>> 96df82c0a06916d586faf820743211dcdd2b8563
         {
             { 0, 0, 0, 0, 0, 0, 0, 0 },
             { 0, 0, 0, 0, 0, 0, 0, 0 },
             { 0, 0, 0, 0, 0, 0, 0, 0 },
-<<<<<<< HEAD
-            { 0, 0, 0, -1, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0 }
-        };
-    }
-
-    public void SpawnEnemyPiece()
-    {
-        if (LeerBordes(_board) < 1)
-        {
-            return;
-        }
-        else if (LeerBordes(_board) < 5 + (_turns/5))
-        {
-            for (int i = 0; i < LeerBordes(_board); i++)
-            {
-                RandomPieceSpawn();
-            }
-            return;
-        }
-        else
-        {
-            for (int i = 0; i < 5 + (_turns/5); i++)
-            {
-                RandomPieceSpawn();
-            }
-        }
-    }
-    static int LeerBordes(int[,] matriz)
-    {
-        int filas = matriz.GetLength(0);
-        int cols = matriz.GetLength(1);
-        int casillasDisponibles = 0;
-        
-        for (int i = 0; i < filas; i++)
-        {
-            for (int j = 0; j < cols; j++)
-            {
-                // Es borde si está en primera/última fila o primera/última columna
-                if (i == 0 || i == filas - 1 || j == 0 || j == cols - 1)
-                {
-                    if (matriz[i, j] == 0)
-                    {
-                        casillasDisponibles++;
-                    }
-                }
-            }
-        }
-
-        return casillasDisponibles;
-    }
-
-
-    public void RandomPieceSpawn()  
-    {
-        int difficulityLevel = _turns;
-        if (_turns > 15)
-        {
-            difficulityLevel = 15;
-        }
-        // Aqui captura la dificultad para limitar el tipo de piezas
-        int pieceType = random.Next(1, 2 + difficulityLevel/3); // Genera un número aleatorio entre 1 y 5
-        // Aquí puedes usar pieceType para determinar qué tipo de pieza crear de peon a reina
-        bool isInRow = random.Next(0, 2) == 0;
-        // Aquí puedes usar isRow para determinar si la pieza se modificara para colocarse en una fila o columna
-        int row, col;
-        if (isInRow)
-        {
-            row = random.Next(1, BOARD_SIZE);
-            col = random.Next(0, 2);
-            if (col != 0)
-            {
-                col = BOARD_SIZE - 1;
-            }
-            if (_board[row, col] == 0)
-            {
-                _board[row, col] = pieceType;
-                }
-=======
             { 0, 0, 0, 0, -1, 0, 0, 0 },
             { 0, 0, 0, 0, 0, 0, 0, 0 },
             { 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -205,7 +91,6 @@ public partial class Board : Sprite2D
             {
                 _board[row, col] = pieceType;
                 }
->>>>>>> 96df82c0a06916d586faf820743211dcdd2b8563
             else
             {
                 RandomPieceSpawn();
@@ -230,9 +115,6 @@ public partial class Board : Sprite2D
         }
     }
 
-<<<<<<< HEAD
-    // Función para mostrar las piezas en el tablero
-=======
      public void SpawnEnemyPiece()
     {
         if (LeerBordes(_board) < 1)
@@ -280,7 +162,6 @@ public partial class Board : Sprite2D
     }
 
     //Funcion para mostrar las piezas en el tablero
->>>>>>> 96df82c0a06916d586faf820743211dcdd2b8563
     public void DisplayBoard()
     {
         // Liberar hijos previos (si se vuelve a dibujar)
@@ -319,22 +200,14 @@ public partial class Board : Sprite2D
         }
     }
 
-<<<<<<< HEAD
-    // Asigna la textura correspondiente según el valor entero de la pieza
-=======
         // Asigna la textura correspondiente según el valor entero de la pieza
->>>>>>> 96df82c0a06916d586faf820743211dcdd2b8563
     private void AssignTexture(Sprite2D holder, int piece)
     {
         switch (piece)
         {
             case -1:
                 holder.Texture = _piecesTexture.mainCharacterTexture;
-<<<<<<< HEAD
-                break;            
-=======
                 break;
->>>>>>> 96df82c0a06916d586faf820743211dcdd2b8563
             case 1:
                 holder.Texture = _piecesTexture.BlackPawn;
                 break;
@@ -358,8 +231,6 @@ public partial class Board : Sprite2D
                 break;
         }
     }
-<<<<<<< HEAD
-=======
 
 
     public override void _Process(double delta)
@@ -494,13 +365,6 @@ public partial class Board : Sprite2D
         return _moves;
     }
 
->>>>>>> 96df82c0a06916d586faf820743211dcdd2b8563
-
-    public override void _Process(double delta)
-    {
-    }
-
-
     public bool isValidPosition(Vector2 pos)
     {
         if (pos.X < 0 || pos.X >= BOARD_SIZE || pos.Y < 0 || pos.Y >= BOARD_SIZE)
@@ -528,30 +392,6 @@ public partial class Board : Sprite2D
     {
         if (@event is InputEventMouseButton mouseEvent && mouseEvent.IsPressed())
         {
-<<<<<<< HEAD
-            if (mouseEvent.ButtonIndex == MouseButton.Left)
-            {
-                if (IsMouseOut())
-                    return;
-
-                Vector2 mousePos = GetGlobalMousePosition();
-
-                Vector2 posX = mousePos.Snapped(new Vector2(mousePos.X, 0)) / CELL_WIDTH;
-                Vector2 posY = mousePos.Snapped(new Vector2(0, mousePos.Y)) / CELL_WIDTH;
-
-                int col = (int)posX.X;
-                int row = (int)posY.Y;
-
-                GD.Print(col + " " + row);
-            }
-        }
-    }
-
-    public bool IsMouseOut()
-    {
-        Vector2 pos = GetGlobalMousePosition();
-        if (pos.X < 0 || pos.X > CELL_WIDTH * BOARD_SIZE || pos.Y < 0 || pos.Y > CELL_WIDTH * BOARD_SIZE)
-=======
             // convertir la posición global a local del nodo (Sprite2D)
                 Vector2 local = ToLocal(GetGlobalMousePosition());
             if (mouseEvent.ButtonIndex == MouseButton.Left)
@@ -604,9 +444,9 @@ public partial class Board : Sprite2D
     {
         Vector2 mousePos = GetGlobalMousePosition();
         if (mousePos.X < 0 || mousePos.X >= CELL_WIDTH*BOARD_SIZE || mousePos.Y < 0 || mousePos.Y >= CELL_WIDTH*BOARD_SIZE)
->>>>>>> 96df82c0a06916d586faf820743211dcdd2b8563
             return true;
         return false;
     }
 }
+
 
