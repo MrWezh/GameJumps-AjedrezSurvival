@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Data;
 
 public partial class Pieces : Node
 {
@@ -27,7 +28,7 @@ public partial class Pieces : Node
     public Texture2D mainCharacterTexture = 
 	ResourceLoader.Load<Texture2D>("res://Assets/pieces/ReyBlanco.png");
 
-	public Texture2D blackBishop = 
+	public Texture2D BlackBishop = 
 	ResourceLoader.Load<Texture2D>("res://Assets/pieces/AlfilNegro.png");
 	public Texture2D BlackKing =
 	ResourceLoader.Load<Texture2D>("res://Assets/pieces/ReyNegro.png");
@@ -39,6 +40,9 @@ public partial class Pieces : Node
 	ResourceLoader.Load<Texture2D>("res://Assets/pieces/ReinaNegraNegro.png");
 	public Texture2D BlackRook =
 	ResourceLoader.Load<Texture2D>("res://Assets/pieces/TorreNegra.png");
+
+	public Texture2D PIECES_MOVES =
+	ResourceLoader.Load<Texture2D>("res://Assets/Piece_move.png");
 
 	/*
 	pieces
@@ -53,5 +57,8 @@ public partial class Pieces : Node
 
 	public PackedScene TEXTURE_PLACEHOLDER = 
 		GD.Load<PackedScene>("res://Scenes/texture_placerholder.tscn");
+
+	
+	
 
 }
