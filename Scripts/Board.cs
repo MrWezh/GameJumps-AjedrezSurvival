@@ -1,11 +1,6 @@
 using Godot;
-using Godot.NativeInterop;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-
-
 public partial class Board : Sprite2D
 {
     private const int BOARD_SIZE = 8;
@@ -29,7 +24,7 @@ public partial class Board : Sprite2D
     private Vector2I _selectedPiece;
     private bool _isWhiteTurn = false;
     
-    private int _turns = 5;
+    private int _turns = 20;
     private int _maxEnemics = 0;
     private Random random = new Random();
 
@@ -44,14 +39,13 @@ public partial class Board : Sprite2D
     public override void _Ready()
     {
         _piecesTexture = new Pieces();
-
+        _selectedPiece = new Vector2I(-1, -1);
         _pieces = GetNode<Node2D>("Pieces");
         _dots = GetNode<Node2D>("Dots");
-        _turn = GetNode<Sprite2D>("Turn");
-        _selectedPiece = new Vector2I(-1, -1);
         _state = StateMachine.None;
 
         InitializeBoard();
+        SpawnEnemyPiece();
         DisplayBoard();
     }
 
@@ -284,13 +278,13 @@ public partial class Board : Sprite2D
                 GD.Print("Pawn selected");
                 break;
             case 2:
-                _moves = get_rook_moves();
-                break;
-            case 3:
                 GD.Print("Knight selected");
                 break;
-            case 4:
+            case 3:
                 _moves = get_bishop_moves();
+                break;
+            case 4:
+                _moves = get_rook_moves();
                 break;
             case 5:
                 GD.Print("Queen selected");
