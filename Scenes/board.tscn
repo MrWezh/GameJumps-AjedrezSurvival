@@ -10,17 +10,11 @@ _pieces = NodePath("Pieces")
 
 [node name="BoardSprite" type="Sprite2D" parent="."]
 position = Vector2(167.8, 167.8)
-scale = Vector2(0.34, 0.34)
+scale = Vector2(0.333, 0.333)
 texture = ExtResource("2_uh3b8")
 
 [node name="Pieces" type="Node2D" parent="."]
 texture_filter = 1
-
-[node name="Dots" type="Node2D" parent="."]
-
-[node name="Turn" type="Sprite2D" parent="."]
-position = Vector2(164, -164)
-scale = Vector2(0.325, 0.325)
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(164, 164)

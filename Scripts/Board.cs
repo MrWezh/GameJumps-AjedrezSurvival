@@ -1,156 +1,217 @@
-using Godot;
-using Godot.NativeInterop;
 using System;
-
+using Godot;
 
 public partial class Board : Sprite2D
 {
+    Random random = new Random();
     private const int BOARD_SIZE = 8;
     private const int CELL_WIDTH = 42;
 
     private Pieces _piecesTexture;
+    private int[,] _board;
 
-      private int[,] _board;
-
-      bool white = true;
-      bool  state = true;
-      int[] moves = { };
-
-    enum StateMachine
+    private enum StateMachine
     {
         Moving,
-        Moved, 
+        Moved,
         None
     }
 
-
-   
     private StateMachine _state;
-    private Vector2I _selectedPiece;
+    private Vector2I _selectedPiece = new Vector2I(0, 0);
     private bool _isWhiteTurn = false;
-        
+    private int _turns = 5;
     [Export]
     private Node2D _pieces;
-    private Node2D _dots;
-    private Sprite2D _turn;
 
-
-	public override void _Ready()
+    public override void _Ready()
     {
         _piecesTexture = new Pieces();
 
         _pieces = GetNode<Node2D>("Pieces");
-        _dots = GetNode<Node2D>("Dots");
-        _turn = GetNode<Sprite2D>("Turn");
         _state = StateMachine.None;
-        _selectedPiece = new Vector2I(0, 0);
 
         InitializeBoard();
-        display_board();
+        SpawnEnemyPiece();
+        DisplayBoard();
     }
 
     public void InitializeBoard()
     {
-        _board = new int[8,8]
+        _board = new int[BOARD_SIZE, BOARD_SIZE]
         {
-            { 2, 3, 4, 5, 6, 4, 3, 2 },
-            { 1, 1, 1, 1, 1, 1, 1, 1 },
             { 0, 0, 0, 0, 0, 0, 0, 0 },
             { 0, 0, 0, 0, 0, 0, 0, 0 },
             { 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, -1, 0, 0, 0, 0 },
             { 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0 ,0 ,0, 0, 0 ,0, 0, 0 },
-            { 0, 0, 0, 0, -1, 0, 0, 0 }
+            { 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0 }
         };
     }
-    //Funcion para mostrar las piezas en el tablero
-    
-   public void display_board()
+
+    public void SpawnEnemyPiece()
     {
-        for (int row = 0; row < BOARD_SIZE; row++)
+
+        for (int i = 0; i < 5 + (_turns/5); i++)
         {
-            for (int col = 0; col < BOARD_SIZE; col++)
+            RandomPieceSpawn();
+        }
+    }
+
+    public void RandomPieceSpawn()  
+    {
+        int difficulityLevel = _turns;
+        if (_turns > 15)
+        {
+            difficulityLevel = 15;
+        }
+        // Aqui captura la dificultad para limitar el tipo de piezas
+        int pieceType = random.Next(1, 2 + difficulityLevel/3); // Genera un número aleatorio entre 1 y 5
+        // Aquí puedes usar pieceType para determinar qué tipo de pieza crear de peon a reina
+        bool isInRow = random.Next(0, 2) == 0;
+        // Aquí puedes usar isRow para determinar si la pieza se modificara para colocarse en una fila o columna
+        int row, col;
+        if (isInRow)
+        {
+            row = random.Next(1, BOARD_SIZE);
+            col = random.Next(0, 2);
+            if (col != 0)
             {
-                // Crear una instancia del sprite de la pieza
-                Sprite2D holder = (Sprite2D)_piecesTexture.TEXTURE_PLACEHOLDER.Instantiate();
-
-                // Posicionar la pieza en el centro de la celda
-                holder.Position = new Vector2(
-                    col * CELL_WIDTH + (CELL_WIDTH/2),
-                    row * CELL_WIDTH + (CELL_WIDTH/2) 
-                    );
-
-                int piece = _board[row, col];
-                if (piece != 0)
-                {
-                    switch (piece)
-                    {
-                        case 1:
-                            holder.Texture = _piecesTexture.BlackPawn;
-                            break;
-                        case -1:
-                           holder.Texture = _piecesTexture.mainCharacterTexture;
-                            break;
-                        case 2:
-                            holder.Texture = _piecesTexture.BlackRook;
-                            break;
-                        case 3:
-                            holder.Texture = _piecesTexture.BlackKnight;
-                            break;
-                        case 4:
-                            holder.Texture = _piecesTexture.blackBishop;
-                            break;
-                        case 5:
-                            holder.Texture = _piecesTexture.BlackQueen;
-                            break;
-                        case 6:
-                            holder.Texture = _piecesTexture.BlackKing;
-                            break;
-                    }
-                    
+                col = BOARD_SIZE - 1;
+            }
+            if (_board[row, col] == 0)
+            {
+                _board[row, col] = pieceType;
                 }
-                // Agregar la pieza al nodo de piezas
+            else
+            {
+                RandomPieceSpawn();
+            }
+        }
+        else
+        {
+            col = random.Next(1, BOARD_SIZE);
+            row = random.Next(0, 2);
+            if (row != 0)
+            {
+                row = BOARD_SIZE - 1;
+            }
+            if (_board[row, col] == 0)
+            {
+                _board[row, col] = pieceType;
+            }
+            else
+            {
+                RandomPieceSpawn();
+            }
+        }
+    }
+
+    // Función para mostrar las piezas en el tablero
+    public void DisplayBoard()
+    {
+        // Liberar hijos previos (si se vuelve a dibujar)
+        foreach (Node child in _pieces.GetChildren())
+        {
+            // QueueFree para liberar correctamente los nodos instanciados
+            child.QueueFree();
+        }
+
+        // Local copies for faster access
+        int size = BOARD_SIZE;
+        int cell = CELL_WIDTH;
+        var textures = _piecesTexture;
+
+        for (int row = 0; row < size; row++)
+        {
+            for (int col = 0; col < size; col++)
+            {
+                int piece = _board[row, col];
+                if (piece == 0)
+                    continue; // evitar instanciar para celdas vacías
+
+                // Calcular posición del centro de la celda (float)
+                Vector2 position = new Vector2(col * cell + cell / 2f, row * cell + cell / 2f);
+
+                // Instanciar y preparar el sprite solo cuando hay pieza
+                Sprite2D holder = (Sprite2D)textures.TEXTURE_PLACEHOLDER.Instantiate();
+                holder.ZAsRelative = false;
+                holder.ZIndex = 1;
+                holder.Position = position;
+
+                AssignTexture(holder, piece);
+
                 _pieces.AddChild(holder);
             }
         }
     }
 
-	
-	public override void _Process(double delta)
-	{
-      
-	} 
+    // Asigna la textura correspondiente según el valor entero de la pieza
+    private void AssignTexture(Sprite2D holder, int piece)
+    {
+        switch (piece)
+        {
+            case -1:
+                holder.Texture = _piecesTexture.mainCharacterTexture;
+                break;            
+            case 1:
+                holder.Texture = _piecesTexture.BlackPawn;
+                break;
+            case 2:
+                holder.Texture = _piecesTexture.BlackKnight;
+                break;
+            case 3:
+                holder.Texture = _piecesTexture.BlackBishop;
+                break;
+            case 4:
+                holder.Texture = _piecesTexture.BlackRook;
+                break;
+            case 5:
+                holder.Texture = _piecesTexture.BlackQueen;
+                break;
+            case 6:
+                holder.Texture = _piecesTexture.BlackKing;
+                break;
+            default:
+                holder.Texture = null;
+                break;
+        }
+    }
 
-
+    public override void _Process(double delta)
+    {
+    }
 
     public override void _Input(InputEvent @event)
     {
         if (@event is InputEventMouseButton mouseEvent && mouseEvent.IsPressed())
         {
-         
-                if (mouseEvent.ButtonIndex == MouseButton.Left)
-{
-                    if (is_mouse_out())
-                        return; 
+            if (mouseEvent.ButtonIndex == MouseButton.Left)
+            {
+                if (IsMouseOut())
+                    return;
+
                 Vector2 mousePos = GetGlobalMousePosition();
 
-                Vector2 PosX = mousePos.Snapped(new Vector2(GetGlobalMousePosition().X, 0))/CELL_WIDTH;
-                Vector2 PosY = mousePos.Snapped(new Vector2(GetGlobalMousePosition().Y, 0))/CELL_WIDTH;
+                Vector2 posX = mousePos.Snapped(new Vector2(mousePos.X, 0)) / CELL_WIDTH;
+                Vector2 posY = mousePos.Snapped(new Vector2(0, mousePos.Y)) / CELL_WIDTH;
 
-                int var1 = (int) PosX.X;
-                int var2 = (int) PosY.Y*(-1);
+                int col = (int)posX.X;
+                int row = (int)posY.Y;
 
-                GD.Print(var1 +" "+ var2);
-}
-            }          
+                GD.Print(col + " " + row);
+            }
         }
+    }
 
-        public  bool is_mouse_out()
+    public bool IsMouseOut()
     {
-
-        if (GetGlobalMousePosition().X < 0 || GetGlobalMousePosition().X > 328|| GetGlobalMousePosition().Y > 0 || GetGlobalMousePosition().Y < 328)
+        Vector2 pos = GetGlobalMousePosition();
+        if (pos.X < 0 || pos.X > CELL_WIDTH * BOARD_SIZE || pos.Y < 0 || pos.Y > CELL_WIDTH * BOARD_SIZE)
             return true;
         return false;
     }
-    }
+}
 
