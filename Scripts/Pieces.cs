@@ -29,11 +29,8 @@ public partial class Pieces : Node
 
 	public Texture2D blackBishop = 
 	ResourceLoader.Load<Texture2D>("res://Assets/pieces/AlfilNegro.png");
-	
-	
 	public Texture2D BlackKing =
 	ResourceLoader.Load<Texture2D>("res://Assets/pieces/ReyNegro.png");
-
 	public Texture2D BlackKnight =
 	ResourceLoader.Load<Texture2D>("res://Assets/pieces/CaballoNegro.png");
 	public Texture2D BlackPawn =
@@ -54,19 +51,7 @@ public partial class Pieces : Node
 	king = 6
 	*/
 
-	const int blackPawnID = 1;
-	const int blackRookID = 2;
-	const int blackKnightID = 3;
-	const int blackBishopID = 4;
-	const int blackQueenID = 5;
-	const int blackKingID = 6;
-
 	public PackedScene TEXTURE_PLACEHOLDER = 
 		GD.Load<PackedScene>("res://Scenes/texture_placerholder.tscn");
-
-
-	   
-
-
 
 }

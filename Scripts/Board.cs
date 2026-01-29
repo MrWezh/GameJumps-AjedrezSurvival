@@ -46,7 +46,7 @@ public partial class Board : Sprite2D
         _selectedPiece = new Vector2I(0, 0);
 
         InitializeBoard();
-        //display_board();
+        display_board();
     }
 
     public void InitializeBoard()
@@ -71,11 +71,13 @@ public partial class Board : Sprite2D
         {
             for (int col = 0; col < BOARD_SIZE; col++)
             {
+                // Crear una instancia del sprite de la pieza
                 Sprite2D holder = (Sprite2D)_piecesTexture.TEXTURE_PLACEHOLDER.Instantiate();
 
+                // Posicionar la pieza en el centro de la celda
                 holder.Position = new Vector2(
                     col * CELL_WIDTH + (CELL_WIDTH/2),
-                    row * CELL_WIDTH + (CELL_WIDTH/2)*-1
+                    row * CELL_WIDTH + (CELL_WIDTH/2) 
                     );
 
                 int piece = _board[row, col];
@@ -105,8 +107,10 @@ public partial class Board : Sprite2D
                             holder.Texture = _piecesTexture.BlackKing;
                             break;
                     }
-                    _pieces.AddChild(holder);
+                    
                 }
+                // Agregar la pieza al nodo de piezas
+                _pieces.AddChild(holder);
             }
         }
     }
@@ -144,7 +148,7 @@ public partial class Board : Sprite2D
         public  bool is_mouse_out()
     {
 
-        if (GetGlobalMousePosition().X < 0 || GetGlobalMousePosition().X >  328|| GetGlobalMousePosition().Y > 0 || GetGlobalMousePosition().Y < -328)
+        if (GetGlobalMousePosition().X < 0 || GetGlobalMousePosition().X > 328|| GetGlobalMousePosition().Y > 0 || GetGlobalMousePosition().Y < 328)
             return true;
         return false;
     }
