@@ -231,12 +231,6 @@ public partial class Board : Node2D
                 break;
         }
     }
-
-
-    public override void _Process(double delta)
-    {
-
-    }
     // mostrar las opciones de movimiento
     public void show_options()
     {
@@ -303,7 +297,9 @@ public partial class Board : Node2D
      public List<Vector2> get_pawn_moves()
     {
         List<Vector2> _moves = new List<Vector2>();
-        Vector2[] directions = new Vector2[] { new Vector2(0, 1), new Vector2(1, 0), new Vector2(0, -1), new Vector2(-1, 0) };
+        Vector2[] directions = new Vector2[] { 
+                new Vector2(0, 1), new Vector2(1, 0), 
+                new Vector2(0, -1), new Vector2(-1, 0) };
 
         Vector2 start = new Vector2(_selectedPiece.X, _selectedPiece.Y); // X = col, Y = row
 
@@ -320,9 +316,21 @@ public partial class Board : Node2D
                 {
                     int col = (int)nextPos.X;
                     int row = (int)nextPos.Y;
-                    if (black && _board[row, col] > 0) // Si hay pieza enemiga
+                    
+                    var enemyPositions = new List<Vector2>
                     {
-                        _moves.Add(nextPos);
+                        new Vector2(start.X + 1, start.Y + 1), // Diagonal derecha adelante
+                        new Vector2(start.X - 1, start.Y + 1), // Diagonal izquierda adelante
+                        new Vector2(start.X + 1, start.Y - 1), // Diagonal derecha atrás
+                        new Vector2(start.X - 1, start.Y - 1) // Diagonal izquierda atrás
+                    };
+                    foreach (Vector2 enemyPos in enemyPositions)
+                    {
+                        if (_board[(int)enemyPos.Y, (int)enemyPos.X] < 0)
+                        {
+                            _moves.Add(enemyPos);
+                            gameOver();
+                        }
                     }
                 }
             }
@@ -355,7 +363,7 @@ public partial class Board : Node2D
                 {
                     int col = (int)nextPos.X;
                     int row = (int)nextPos.Y;
-                    if (black && _board[row, col] > 0) // Si hay pieza enemiga
+                    if (black && _board[row, col] < 0) // Si hay pieza enemiga
                     {
                         _moves.Add(nextPos);
                     }
@@ -385,7 +393,7 @@ public partial class Board : Node2D
                 {
                     int col = (int)nextPos.X;
                     int row = (int)nextPos.Y;
-                    if (black && _board[row, col] > 0)
+                    if (black && _board[row, col] < 0)
                     {
                         _moves.Add(new Vector2(nextPos.X, nextPos.Y));
                     }
@@ -420,7 +428,7 @@ public partial class Board : Node2D
                 {
                     int col = (int)nextPos.X;
                     int row = (int)nextPos.Y;
-                    if (black && _board[row, col] > 0)
+                    if (black && _board[row, col] < 0)
                     {
                         _moves.Add(new Vector2(nextPos.X, nextPos.Y));
                     }
@@ -456,7 +464,8 @@ public partial class Board : Node2D
                 {
                     int col = (int)nextPos.X;
                     int row = (int)nextPos.Y;
-                    if (black && _board[row, col] > 0)
+                    //si hay pieza enemiga
+                    if (black && _board[row, col] < 0)
                     {
                         _moves.Add(new Vector2(nextPos.X, nextPos.Y));
                     }
@@ -492,7 +501,7 @@ public partial class Board : Node2D
                 {
                     int col = (int)nextPos.X;
                     int row = (int)nextPos.Y;
-                    if (black && _board[row, col] > 0)
+                    if (black && _board[row, col] < 0)
                     {
                         _moves.Add(new Vector2(nextPos.X, nextPos.Y));
                     }
@@ -526,7 +535,6 @@ public partial class Board : Node2D
             child.QueueFree();
     }
 
-    
     public override void _Input(InputEvent @event)
     {
         if (@event is InputEventMouseButton mouseEvent && mouseEvent.IsPressed())
@@ -552,23 +560,38 @@ public partial class Board : Node2D
                 }
                 else if (state)
                 {
+                    // seleccionar movimiento
                     Vector2 selectedMove = new Vector2(col, row);
                     if (moves.Contains(selectedMove))
                     {
                         // mover la pieza
                         int fromRow = (int)_selectedPiece.Y;
                         int fromCol = (int)_selectedPiece.X;
+                        
                         int toRow = (int)selectedMove.Y;
                         int toCol = (int)selectedMove.X;
-
+                        
+                        // Evitar capturar piezas negras aliadas (solo permitir capturar al rey blanco -1)
+                        if (_board[toRow, toCol] > 0)
+                        {
+                            ClearDots();
+                            state = false;
+                            return;
+                        }
+                        if (_board[toRow, toCol] == -1){
+                            // pieza principal capturada - GAME OVER
+                            gameOver();
+                        }
+                    
                         _board[toRow, toCol] = _board[fromRow, fromCol];
                         _board[fromRow, fromCol] = 0;
-
-                        // limpiar los puntos de movimiento
+                        // limpiar los puntos de movimiento y actualizar el tablero
                         ClearDots();
+                        DisplayBoard();
                         state = false;
-                        black = !black;
-                    }
+                }
+
+                        
                     else
                     {
                         // limpiar los puntos de movimiento
@@ -579,11 +602,19 @@ public partial class Board : Node2D
             }
         }
     }
+        public override void _Process(double delta)
+    {
+
+    }
     public bool is_mouse_out()
     {
         Vector2 mousePos = GetGlobalMousePosition();
         if (mousePos.X < 0 || mousePos.X >= CELL_WIDTH*BOARD_SIZE || mousePos.Y < 0 || mousePos.Y >= CELL_WIDTH*BOARD_SIZE)
             return true;
         return false;
+    }
+
+    public void gameOver(){
+        GetTree().ChangeSceneToFile("res://scenes/gameOver.tscn"); 
     }
 }
