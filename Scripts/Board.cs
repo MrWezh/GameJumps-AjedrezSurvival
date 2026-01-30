@@ -71,7 +71,7 @@ public partial class Board : Node2D
         int difficulityLevel = _turns;
         if (_turns > 15)
         {
-            difficulityLevel = 15;
+            difficulityLevel = 12;
         }
         // Aqui captura la dificultad para limitar el tipo de piezas
         int pieceType = random.Next(1, 2 + difficulityLevel/3); // Genera un número aleatorio entre 1 y 5
@@ -615,6 +615,6 @@ public partial class Board : Node2D
     }
 
     public void gameOver(){
-        GetTree().ChangeSceneToFile("res://scenes/gameOver.tscn"); 
+        GetTree().ChangeSceneToFile("res://Scenes/GameOver.tscn"); 
     }
 }

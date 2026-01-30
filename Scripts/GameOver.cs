@@ -15,7 +15,7 @@ public partial class GameOver : Node2D
 
 	public void _on_reset_pressed(){
 		// Reiniciar la escena actual
-		 GetTree().ChangeSceneToFile("res://scenes/board.tscn"); 
+		 GetTree().ChangeSceneToFile("uid://c7kdiwl4ek353"); 
 	}
 
 	public void _on_exit_pressed(){
