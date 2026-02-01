@@ -18,7 +18,7 @@ public partial class Board : Node2D
     private Vector2I _selectedPiece = new Vector2I(0, 0);
     private bool _isWhiteTurn = false;
     
-    private int _turns = 20;
+    private int _turns = 3;
     private int _maxEnemics = 0;
     private PiecesMovement _piecesMovement;
     private Vector2 _playerPosition; 
@@ -241,7 +241,8 @@ public partial class Board : Node2D
                 int piece = _board[row, col];
                 if (piece > 0)
                 {
-                    Vector2 enemyMoves = new Vector2(0, 0);
+                    //posición actual del enemigo
+                    Vector2 enemyMoves = new Vector2(col, row);
                     // Obtener los movimientos posibles según el tipo de pieza
                     switch (piece)
                     {
