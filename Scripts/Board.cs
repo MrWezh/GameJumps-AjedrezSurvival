@@ -15,20 +15,14 @@ public partial class Board : Node2D
     public bool black = true;
     public bool state = false;
     public List<Vector2> moves;
-
-    enum StateMachine
-    {
-        Moving,
-        Moved,
-        None
-    }
-    private StateMachine _state;
     private Vector2I _selectedPiece = new Vector2I(0, 0);
     private bool _isWhiteTurn = false;
     
     private int _turns = 20;
     private int _maxEnemics = 0;
-
+    private PiecesMovement _piecesMovement;
+    private Vector2 _playerPosition; 
+    
 
 
     [Export]
@@ -43,9 +37,10 @@ public partial class Board : Node2D
     {
         _piecesTexture = new Pieces();
         _selectedPiece = new Vector2I(-1, -1);
+        _playerPosition = new Vector2(4, 3);
         _pieces = GetNode<Node2D>("Pieces");
         _dots = GetNode<Node2D>("Dots");
-        _state = StateMachine.None;
+        _piecesMovement = new PiecesMovement();
 
         InitializeBoard();
         SpawnEnemyPiece();
@@ -65,6 +60,8 @@ public partial class Board : Node2D
             { 0 ,0 ,0, 0, 0 ,0, 0, 0 },
             { 0, 0, 0, 0, 0, 0, 0, 0 }
         };
+
+        _piecesMovement.setBoard(_board);
     }
       public void RandomPieceSpawn()
     {
@@ -232,17 +229,54 @@ public partial class Board : Node2D
         }
     }
     // mostrar las opciones de movimiento
-    public void show_options()
+
+    public void enemies_movement()
     {
-        moves = get_moves();
 
-        if (moves.Count == 0)
+        // lógica para mover las piezas enemigas automáticamente
+        for (int row = 0; row < BOARD_SIZE; row++)
         {
-            state = false;
-            return;
-        }
+            for (int col = 0; col < BOARD_SIZE; col++)
+            {
+                int piece = _board[row, col];
+                if (piece > 0)
+                {
+                    Vector2 enemyMoves = new Vector2(0, 0);
+                    // Obtener los movimientos posibles según el tipo de pieza
+                    switch (piece)
+                    {
+                        case 1:
+                            enemyMoves = _piecesMovement.get_pawn_moves(col, row);
+                            break;
+                        case 2:
+                            enemyMoves = _piecesMovement.get_knight_moves(col, row);
+                            break;
+                        case 3:
+                            enemyMoves = _piecesMovement.get_bishop_moves(col, row);
+                            break;
+                        case 4:
+                            enemyMoves = _piecesMovement.get_rook_moves(col, row);
+                            break;
+                        case 5:
+                            enemyMoves = _piecesMovement.get_queen_moves(col, row);
+                            break;
+                        case 6:
+                            enemyMoves = _piecesMovement.get_king_moves(col, row);
+                            break;
+                    }
+                    
+                   // if(_board[(int)enemyMoves.Y, (int)enemyMoves.X] == -1){
+                      ///  gameOver();
+                    //}
 
-        show_dots();
+                    _board[row, col] = 0;
+                    _board[(int)enemyMoves.Y, (int)enemyMoves.X] = piece;
+                    
+                    _piecesMovement.setBoard(_board);
+                }
+            }
+        }
+        
     }
       // mostrar los puntos de movimiento
     public void show_dots()
@@ -262,7 +296,7 @@ public partial class Board : Node2D
     }
 
     // obtener los movimientos de la pieza seleccionada
-    public List<Vector2> get_moves()
+   /* public List<Vector2> get_moves()
     {
 
         List<Vector2> _moves = new List<Vector2>();
@@ -292,241 +326,8 @@ public partial class Board : Node2D
                 break;
         }
         return _moves;
-    }
+    }*/
 
-     public List<Vector2> get_pawn_moves()
-    {
-        List<Vector2> _moves = new List<Vector2>();
-        Vector2[] directions = new Vector2[] { 
-                new Vector2(0, 1), new Vector2(1, 0), 
-                new Vector2(0, -1), new Vector2(-1, 0) };
-
-        Vector2 start = new Vector2(_selectedPiece.X, _selectedPiece.Y); // X = col, Y = row
-
-        foreach (Vector2 dir in directions)
-        {
-            Vector2 nextPos = start + dir;
-            if (isValidPosition(nextPos))
-            {
-                if (is_empty(nextPos))
-                {
-                    _moves.Add(nextPos);
-                }
-                else
-                {
-                    int col = (int)nextPos.X;
-                    int row = (int)nextPos.Y;
-                    
-                    var enemyPositions = new List<Vector2>
-                    {
-                        new Vector2(start.X + 1, start.Y + 1), // Diagonal derecha adelante
-                        new Vector2(start.X - 1, start.Y + 1), // Diagonal izquierda adelante
-                        new Vector2(start.X + 1, start.Y - 1), // Diagonal derecha atrás
-                        new Vector2(start.X - 1, start.Y - 1) // Diagonal izquierda atrás
-                    };
-                    foreach (Vector2 enemyPos in enemyPositions)
-                    {
-                        if (_board[(int)enemyPos.Y, (int)enemyPos.X] < 0)
-                        {
-                            _moves.Add(enemyPos);
-                            gameOver();
-                        }
-                    }
-                }
-            }
-        }
-        return _moves;
-    }
-    // movimientos del caballo
-      public List<Vector2> get_knight_moves()
-    {
-        // movimientos posibles del caballo
-        List<Vector2> _moves = new List<Vector2>();
-        Vector2[] directions = new Vector2[] {
-                new Vector2(2, 1), new Vector2(1, 2),
-                new Vector2(-1, 2), new Vector2(-2, 1), 
-                new Vector2(-2, -1), new Vector2(-1, -2), 
-                new Vector2(1, -2), new Vector2(2, -1) };
-
-        Vector2 start = new Vector2(_selectedPiece.X, _selectedPiece.Y); // X = col, Y = row
-
-        foreach (Vector2 dir in directions)
-        {
-            Vector2 nextPos = start + dir;
-            if (isValidPosition(nextPos))
-            {
-                if (is_empty(nextPos))
-                {
-                    _moves.Add(nextPos);
-                }
-                else
-                {
-                    int col = (int)nextPos.X;
-                    int row = (int)nextPos.Y;
-                    if (black && _board[row, col] < 0) // Si hay pieza enemiga
-                    {
-                        _moves.Add(nextPos);
-                    }
-                }
-            }
-        }
-        return _moves;
-    }
-
-      public List<Vector2> get_bishop_moves()
-    {
-        List<Vector2> _moves = new List<Vector2>();
-        Vector2[] directions = new Vector2[] { new Vector2(1,1), new Vector2(1,-1), new Vector2(-1,1), new Vector2(-1,-1) };
-
-        Vector2 start = new Vector2(_selectedPiece.X, _selectedPiece.Y); // X = col, Y = row
-
-        foreach (Vector2 dir in directions)
-        {
-            Vector2 nextPos = start + dir;
-            while (isValidPosition(nextPos))
-            {
-                if (is_empty(nextPos))
-                {
-                    _moves.Add(new Vector2(nextPos.X, nextPos.Y));
-                }
-                else
-                {
-                    int col = (int)nextPos.X;
-                    int row = (int)nextPos.Y;
-                    if (black && _board[row, col] < 0)
-                    {
-                        _moves.Add(new Vector2(nextPos.X, nextPos.Y));
-                    }
-                    break;
-                }
-                nextPos += dir;
-            }
-        }
-        return _moves;
-    }
-
-    // movimientos de la torre
-   public List<Vector2> get_rook_moves()
-    {
-        List<Vector2> _moves = new List<Vector2>();
-        Vector2[] directions = new Vector2[] { 
-            new Vector2(0,1), new Vector2(1,0), 
-            new Vector2(0,-1), new Vector2(-1,0)};
-
-        Vector2 start = new Vector2(_selectedPiece.X, _selectedPiece.Y); // X = col, Y = row
-
-        foreach (Vector2 dir in directions)
-        {
-            Vector2 nextPos = start + dir;
-            while (isValidPosition(nextPos))
-            {
-                if (is_empty(nextPos))
-                {
-                    _moves.Add(new Vector2(nextPos.X, nextPos.Y));
-                }
-                else
-                {
-                    int col = (int)nextPos.X;
-                    int row = (int)nextPos.Y;
-                    if (black && _board[row, col] < 0)
-                    {
-                        _moves.Add(new Vector2(nextPos.X, nextPos.Y));
-                    }
-                    break;
-                }
-                nextPos += dir;
-            }
-        }
-        return _moves;
-    }
-
-      public List<Vector2> get_queen_moves()
-    {
-        List<Vector2> _moves = new List<Vector2>();
-        Vector2[] directions = new Vector2[] { 
-            new Vector2(1,1), new Vector2(1,-1), 
-            new Vector2(-1,1), new Vector2(-1,-1), 
-            new Vector2(0,1), new Vector2(1,0), 
-            new Vector2(0,-1), new Vector2(-1,0)};
-
-        Vector2 start = new Vector2(_selectedPiece.X, _selectedPiece.Y); // X = col, Y = row
-
-        foreach (Vector2 dir in directions)
-        {
-            Vector2 nextPos = start + dir;
-            while (isValidPosition(nextPos))
-            {
-                if (is_empty(nextPos))
-                {
-                    _moves.Add(new Vector2(nextPos.X, nextPos.Y));
-                }
-                else
-                {
-                    int col = (int)nextPos.X;
-                    int row = (int)nextPos.Y;
-                    //si hay pieza enemiga
-                    if (black && _board[row, col] < 0)
-                    {
-                        _moves.Add(new Vector2(nextPos.X, nextPos.Y));
-                    }
-                    break;
-                }
-                nextPos += dir;
-            }
-        }
-        return _moves;
-    }
-
-      public List<Vector2> get_king_moves()
-    {
-        List<Vector2> _moves = new List<Vector2>();
-        Vector2[] directions = new Vector2[] { 
-            new Vector2(1,1), new Vector2(1,-1), 
-            new Vector2(-1,1), new Vector2(-1,-1), 
-            new Vector2(0,1), new Vector2(1,0), 
-            new Vector2(0,-1), new Vector2(-1,0)};
-
-        Vector2 start = new Vector2(_selectedPiece.X, _selectedPiece.Y); // X = col, Y = row
-
-        foreach (Vector2 dir in directions)
-        {
-            Vector2 nextPos = start + dir;
-            if (isValidPosition(nextPos))
-            {
-                if (is_empty(nextPos))
-                {
-                    _moves.Add(new Vector2(nextPos.X, nextPos.Y));
-                }
-                else
-                {
-                    int col = (int)nextPos.X;
-                    int row = (int)nextPos.Y;
-                    if (black && _board[row, col] < 0)
-                    {
-                        _moves.Add(new Vector2(nextPos.X, nextPos.Y));
-                    }
-                    break;
-                }
-            }
-        }
-        return _moves;
-    }
-
-
-    public bool isValidPosition(Vector2 pos)
-    {
-        if (pos.X < 0 || pos.X >= BOARD_SIZE || pos.Y < 0 || pos.Y >= BOARD_SIZE)
-            return false;
-        return true;
-    }
-    public bool is_empty(Vector2 pos)
-    {
-        int col = (int)pos.X;
-        int row = (int)pos.Y;
-        if (_board[row, col] == 0)
-            return true;
-        return false;
-    }
      // limpia los puntos hijos del nodo _dots
     private void ClearDots()
     {
@@ -535,72 +336,16 @@ public partial class Board : Node2D
             child.QueueFree();
     }
 
+    public void _on_button_pressed(){
+        _piecesMovement.setPlayerPosition(_playerPosition);
+        enemies_movement();
+        DisplayBoard();
+    }
+
     public override void _Input(InputEvent @event)
     {
-        if (@event is InputEventMouseButton mouseEvent && mouseEvent.IsPressed())
-        {
-            // convertir la posición global a local del nodo (Sprite2D)
-                Vector2 local = ToLocal(GetGlobalMousePosition());
-            if (mouseEvent.ButtonIndex == MouseButton.Left)
-            {
-                 // fuera del tablero?
-                if (local.X < 0 || local.Y < 0 || local.X >= CELL_WIDTH * BOARD_SIZE || local.Y >= CELL_WIDTH * BOARD_SIZE)
-                    return;
 
-                int col = (int)local.X / CELL_WIDTH;
-                int row = (int)local.Y / CELL_WIDTH;
-
-                GD.Print(row, ",", col, ":", _board[row,  col]);
-
-                if (!state && (black && _board[row, col] > 0))
-                {
-                    _selectedPiece = new Vector2I(col, row);
-                    show_options();
-                    state = true;
-                }
-                else if (state)
-                {
-                    // seleccionar movimiento
-                    Vector2 selectedMove = new Vector2(col, row);
-                    if (moves.Contains(selectedMove))
-                    {
-                        // mover la pieza
-                        int fromRow = (int)_selectedPiece.Y;
-                        int fromCol = (int)_selectedPiece.X;
-                        
-                        int toRow = (int)selectedMove.Y;
-                        int toCol = (int)selectedMove.X;
-                        
-                        // Evitar capturar piezas negras aliadas (solo permitir capturar al rey blanco -1)
-                        if (_board[toRow, toCol] > 0)
-                        {
-                            ClearDots();
-                            state = false;
-                            return;
-                        }
-                        if (_board[toRow, toCol] == -1){
-                            // pieza principal capturada - GAME OVER
-                            gameOver();
-                        }
-                    
-                        _board[toRow, toCol] = _board[fromRow, fromCol];
-                        _board[fromRow, fromCol] = 0;
-                        // limpiar los puntos de movimiento y actualizar el tablero
-                        ClearDots();
-                        DisplayBoard();
-                        state = false;
-                }
-
-                        
-                    else
-                    {
-                        // limpiar los puntos de movimiento
-                        ClearDots();
-                        state = false;
-                    }
-                }
-            }
-        }
+      
     }
         public override void _Process(double delta)
     {
