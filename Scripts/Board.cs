@@ -18,7 +18,7 @@ public partial class Board : Node2D
     private Vector2I _selectedPiece = new Vector2I(0, 0);
     private bool _isWhiteTurn = false;
     
-    private int _turns = 3;
+    private int _turns = 1;
     private int _maxEnemics = 0;
     private PiecesMovement _piecesMovement;
     private Vector2 _playerPosition; 
@@ -247,21 +247,27 @@ public partial class Board : Node2D
                     switch (piece)
                     {
                         case 1:
+                            if(_turns%piece==0)
                             enemyMoves = _piecesMovement.get_pawn_moves(col, row);
                             break;
                         case 2:
+                            if(_turns%piece==0)
                             enemyMoves = _piecesMovement.get_knight_moves(col, row);
                             break;
                         case 3:
+                            if(_turns%piece==0)
                             enemyMoves = _piecesMovement.get_bishop_moves(col, row);
                             break;
                         case 4:
+                            if(_turns%piece==0)
                             enemyMoves = _piecesMovement.get_rook_moves(col, row);
                             break;
                         case 5:
+                            if(_turns%piece==0)
                             enemyMoves = _piecesMovement.get_queen_moves(col, row);
                             break;
                         case 6:
+                            if(_turns%piece==0)
                             enemyMoves = _piecesMovement.get_king_moves(col, row);
                             break;
                     }
@@ -296,39 +302,6 @@ public partial class Board : Node2D
         }
     }
 
-    // obtener los movimientos de la pieza seleccionada
-   /* public List<Vector2> get_moves()
-    {
-
-        List<Vector2> _moves = new List<Vector2>();
-        // identificar la pieza seleccionada
-        int row = Math.Abs((int)_selectedPiece.Y);
-        int col = Math.Abs((int)_selectedPiece.X);
-        // mostrar los movimientos según la pieza seleccionada
-        switch (_board[row, col])
-        {
-            case 1:
-                _moves = get_pawn_moves();
-                break;
-            case 2:
-                _moves = get_knight_moves();
-                break;
-            case 3:
-                _moves = get_bishop_moves();
-                break;
-            case 4:
-                _moves = get_rook_moves();
-                break;
-            case 5:
-                _moves = get_queen_moves();
-                break;
-            case 6:
-                _moves = get_king_moves();
-                break;
-        }
-        return _moves;
-    }*/
-
      // limpia los puntos hijos del nodo _dots
     private void ClearDots()
     {
@@ -341,6 +314,7 @@ public partial class Board : Node2D
         _piecesMovement.setPlayerPosition(_playerPosition);
         enemies_movement();
         DisplayBoard();
+        _turns++;
     }
 
     public override void _Input(InputEvent @event)

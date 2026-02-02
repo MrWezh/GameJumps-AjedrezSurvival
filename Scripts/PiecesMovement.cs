@@ -41,63 +41,45 @@ public partial class PiecesMovement : Node2D
 
      public Vector2 get_pawn_moves(int x, int y)
     {
-		Vector2 _moves = new Vector2(x, y);		  
+		Vector2 moves = new Vector2(x, y);		  
         double oldDistance = GetSquaredDistance(new Vector2(x, y));
         Vector2 start = new Vector2(x, y); // X = col, Y = row
-		Vector2[] jaquePos =
-        { 
-            new Vector2(1,1), new Vector2(1,-1), 
-		    new Vector2(-1,1), new Vector2(-1,-1) 
-		};
-
-                    
-			/* foreach (Vector2 pos in jaquePos)
-			{
-                Vector2 nextPos = pos + start;
-                double newDistance = GetSquaredDistance(nextPos);
-                    
-			if(isValidPosition(nextPos)){
-                if (newDistance < oldDistance)
-                    {
-                        oldDistance = newDistance;
-                        _moves = nextPos;
-                    }
-				if(board[(int)nextPos.Y, (int)nextPos.X] == -1 ){
-				return nextPos; 
-						
-		    }
-        }
-        }
-        */
 		
         Vector2[] directions = new Vector2[] 
                 { 
+                new Vector2(1,1), new Vector2(1,-1), 
+		        new Vector2(-1,1), new Vector2(-1,-1),
                 new Vector2(0, 1), new Vector2(1, 0), 
-                new Vector2(0, -1), new Vector2(-1, 0) 
+                new Vector2(0, -1), new Vector2(-1, 0)
+                
                 };
 
-		
-        foreach (Vector2 dir in directions)
+        Vector2 dir;
+        for (int i = 0; i < directions.Length; i++)
         {
+            dir = directions[i];
             Vector2 nextPos = start + dir;
-            if (isValidPosition(nextPos))
+             if (isValidPosition(nextPos)) {
+             if (board[(int)nextPos.Y,(int)nextPos.X]==-1)
             {
-                int cell = board[(int)nextPos.Y, (int)nextPos.X];
-                if (cell == 0)
+                return nextPos;
+            }
+                if (i>3&&is_empty(nextPos))
                 {
                     double newDistance = GetSquaredDistance(nextPos);
                     if (newDistance < oldDistance)
                     {
                         oldDistance = newDistance;
-                        _moves = nextPos;
+                        moves = nextPos;
                     }
-            }
-
+                }
+             }
+             
         }
-       
+
+     return moves;
     }
-     return _moves;
-    }
+
 
     // movimientos del caballo
       public Vector2 get_knight_moves(int x, int y)
@@ -267,4 +249,6 @@ public partial class PiecesMovement : Node2D
             return true;
         return false;
     }
+
+
 }
