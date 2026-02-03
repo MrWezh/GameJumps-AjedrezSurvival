@@ -18,7 +18,7 @@ public partial class Board : Node2D
     private Vector2I _selectedPiece = new Vector2I(0, 0);
     private bool _isWhiteTurn = false;
     
-    private int _turns = 5;
+    private int _turns = 1;
     private int _maxEnemics = 0;
     private PiecesMovement _piecesMovement;
     private Vector2 _playerPosition; 
@@ -315,6 +315,7 @@ public partial class Board : Node2D
         newTurn();
         DisplayBoard();
         _turns++;
+        SpawnEnemyPiece();
     }
 
     public void newTurn()
