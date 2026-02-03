@@ -18,7 +18,7 @@ public partial class Board : Node2D
     private Vector2I _selectedPiece = new Vector2I(0, 0);
     private bool _isWhiteTurn = false;
     
-    private int _turns = 1;
+    private int _turns = 5;
     private int _maxEnemics = 0;
     private PiecesMovement _piecesMovement;
     private Vector2 _playerPosition; 
@@ -232,14 +232,13 @@ public partial class Board : Node2D
 
     public void enemies_movement()
     {
-
         // lógica para mover las piezas enemigas automáticamente
         for (int row = 0; row < BOARD_SIZE; row++)
         {
             for (int col = 0; col < BOARD_SIZE; col++)
             {
                 int piece = _board[row, col];
-                if (piece > 0)
+                if (piece > 0 && piece <= 6)
                 {
                     //posición actual del enemigo
                     Vector2 enemyMoves = new Vector2(col, row);
@@ -277,7 +276,7 @@ public partial class Board : Node2D
                     //}
 
                     _board[row, col] = 0;
-                    _board[(int)enemyMoves.Y, (int)enemyMoves.X] = piece;
+                    _board[(int)enemyMoves.Y, (int)enemyMoves.X] = piece+10;
                     
                     _piecesMovement.setBoard(_board);
                 }
@@ -313,8 +312,24 @@ public partial class Board : Node2D
     public void _on_button_pressed(){
         _piecesMovement.setPlayerPosition(_playerPosition);
         enemies_movement();
+        newTurn();
         DisplayBoard();
         _turns++;
+    }
+
+    public void newTurn()
+    {
+        int rows = _board.GetLength(0);
+        int cols = _board.GetLength(1);
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < cols; col++)
+            {
+                if (_board[row, col] > 10)
+                    _board[row, col] -= 10;
+            }
+        }
     }
 
     public override void _Input(InputEvent @event)

@@ -59,7 +59,7 @@ public partial class PiecesMovement : Node2D
         {
             dir = directions[i];
             Vector2 nextPos = start + dir;
-             if (isValidPosition(nextPos)) {
+             if (isValidPosition(nextPos) && i<4) {
              if (board[(int)nextPos.Y,(int)nextPos.X]==-1)
             {
                 return nextPos;
