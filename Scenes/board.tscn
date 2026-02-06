@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://c7kdiwl4ek353"]
+[gd_scene load_steps=5 format=3 uid="uid://c7kdiwl4ek353"]
 
 [ext_resource type="Script" uid="uid://uc3je255myb1" path="res://Scripts/Board.cs" id="1_2wvcj"]
 [ext_resource type="Texture2D" uid="uid://berta8c2x37g4" path="res://Assets/Textures/Captura de pantalla de 2026-01-22 15-55-28.png" id="2_uh3b8"]
 [ext_resource type="Script" uid="uid://bfkww7fu0blp3" path="res://Scripts/PiecesMovement.cs" id="3_uh3b8"]
+[ext_resource type="Script" uid="uid://c8wisi3lans7m" path="res://Scripts/EnemySpawner.cs" id="4_shhme"]
 
 [node name="Board" type="Node2D" node_paths=PackedStringArray("_pieces", "_dots")]
 script = ExtResource("1_2wvcj")
@@ -31,5 +32,8 @@ offset_top = 1.0
 offset_right = 411.0
 offset_bottom = 36.0
 text = "NEXT TURN"
+
+[node name="EnemySpawner" type="Node2D" parent="."]
+script = ExtResource("4_shhme")
 
 [connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
