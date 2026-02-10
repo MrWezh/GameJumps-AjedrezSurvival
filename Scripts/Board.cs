@@ -11,8 +11,6 @@ public partial class Board : Node2D
 
     private Pieces _piecesTexture;
     private int[,] _board;
-
-    public bool black = true;
     public bool state = false;
     public List<Vector2> moves;
     private Vector2I _selectedPiece = new Vector2I(0, 0);
@@ -22,8 +20,11 @@ public partial class Board : Node2D
     private int _maxEnemics = 0;
     private PiecesMovement _piecesMovement;
     private Vector2 _playerPosition; 
-    
 
+    private Enemies _enemies = new Enemies();
+    private PackedScene[] _enemyScenes = new PackedScene[7];
+    private PackedScene _jugador = GD.Load<PackedScene>("res://Scenes/rey_branco.tscn");
+    
 
     [Export]
     private Node2D _pieces;
@@ -41,6 +42,13 @@ public partial class Board : Node2D
         _pieces = GetNode<Node2D>("Pieces");
         _dots = GetNode<Node2D>("Dots");
         _piecesMovement = new PiecesMovement();
+
+        _enemyScenes[1] = _enemies._peon;
+        _enemyScenes[2] = _enemies._caballo;
+        _enemyScenes[3] = _enemies._alfil;
+        _enemyScenes[4] = _enemies._torre;
+        _enemyScenes[5] = _enemies._reinaNegra;
+        _enemyScenes[6] = _enemies._reynegro;
 
         InitializeBoard();
         SpawnEnemyPiece();
@@ -159,7 +167,7 @@ public partial class Board : Node2D
     }
 
     //Funcion para mostrar las piezas en el tablero
-    public void DisplayBoard()
+   /* public void DisplayBoard()
     {
         // Liberar hijos previos (si se vuelve a dibujar)
         foreach (Node child in _pieces.GetChildren())
@@ -184,6 +192,8 @@ public partial class Board : Node2D
                 // Calcular posición del centro de la celda (float)
                 Vector2 position = new Vector2(col * cell + cell / 2f, row * cell + cell / 2f);
 
+
+
                 // Instanciar y preparar el sprite solo cuando hay pieza
                 Sprite2D holder = (Sprite2D)textures.TEXTURE_PLACEHOLDER.Instantiate();
                 holder.ZAsRelative = false;
@@ -195,14 +205,56 @@ public partial class Board : Node2D
                 _pieces.AddChild(holder);
             }
         }
-    }
+    }*/
 
+public void DisplayBoard()
+{
+    // Liberar hijos previos
+    foreach (Node child in _pieces.GetChildren())
+        child.QueueFree();
+
+    int size = BOARD_SIZE;
+    int cell = CELL_WIDTH;
+
+    for (int row = 0; row < size; row++)
+    {
+        for (int col = 0; col < size; col++)
+        {
+            int piece = _board[row, col];
+            if (piece == 0) continue;
+
+            // Si la pieza fue marcada como movida (+10), recuperar tipo base
+            Vector2 position = new Vector2(col * cell + cell / 2f, row * cell + cell / 2f);
+            CharacterBody2D jugador = _jugador.Instantiate<CharacterBody2D>();
+            jugador.Position = position;
+                //cargar el sprite del jugador
+                if(piece == -1)
+                    _pieces.AddChild(jugador);
+
+                // cargar los sprites de los enemigos
+                if (piece > 0)
+                {   
+                var inst = _enemyScenes[piece].Instantiate();
+                if (inst is CharacterBody2D nd)
+                {
+                    nd.Position = position;
+                    if (nd is CanvasItem ci) ci.ZIndex = 1;
+
+                    _pieces.AddChild(nd);
+                    continue;
+                }
+                }
+            
+    }
+    }
+}
         // Asigna la textura correspondiente según el valor entero de la pieza
-    private void AssignTexture(Sprite2D holder, int piece)
+   private void AssignTexture(Sprite2D holder, int piece)
     {
         switch (piece)
         {
             case -1:
+                // jugador (ajusta si tienes textura para el jugador)
                 holder.Texture = _piecesTexture.mainCharacterTexture;
                 break;
             case 1:

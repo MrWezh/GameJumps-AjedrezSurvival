@@ -31,14 +31,4 @@ public partial class Pieces : Node
                 // No se necesita inicialización en tiempo de ejecución; recursos ya cargados de forma estática.
         }
 
-        // Función para redimensionar texturas (utilizar con precaución; cachear resultados si se usa frecuentemente)
-        public static Texture2D ResizeTexture(Texture2D texture)
-        {
-                if (texture == null)
-                        return null;
-
-                Image image = texture.GetImage();
-                image.Resize(18, 18, Image.Interpolation.Lanczos);
-                return ImageTexture.CreateFromImage(image);
-        }
 }

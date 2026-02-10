@@ -16,12 +16,12 @@ animations = [{
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kclom"]
 size = Vector2(22, 32)
 
-[node name="Caballo" type="StaticBody2D"]
+[node name="Caballo" type="CharacterBody2D"]
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
-position = Vector2(160, 1)
+position = Vector2(0, 1)
 sprite_frames = SubResource("SpriteFrames_wub1j")
 
 [node name="Collision" type="CollisionShape2D" parent="."]
-position = Vector2(161, 2)
+position = Vector2(0, 2)
 shape = SubResource("RectangleShape2D_kclom")

@@ -1,0 +1,29 @@
+[gd_scene load_steps=8 format=3 uid="uid://df77nudxqux01"]
+
+[ext_resource type="Script" uid="uid://c8wisi3lans7m" path="res://Scripts/Enemies.cs" id="1_wf6kh"]
+[ext_resource type="PackedScene" uid="uid://bv6nqgxmcxj5p" path="res://Scenes/Enemies/peon.tscn" id="2_hs5qc"]
+[ext_resource type="PackedScene" uid="uid://bs75b7osc1vjx" path="res://Scenes/Enemies/alfil.tscn" id="3_p3w0t"]
+[ext_resource type="PackedScene" uid="uid://d1gqyd2pmvquf" path="res://Scenes/Enemies/caballo.tscn" id="4_ipwt6"]
+[ext_resource type="PackedScene" uid="uid://cknkiemj06wds" path="res://Scenes/Enemies/torre.tscn" id="5_k1cbw"]
+[ext_resource type="PackedScene" uid="uid://u54g1qns4o8w" path="res://Scenes/Enemies/reina.tscn" id="6_02pba"]
+[ext_resource type="PackedScene" uid="uid://df4dlcxtwn0mp" path="res://Scenes/Enemies/rey.tscn" id="7_ar6lv"]
+
+[node name="Enemigos(Negros)" type="Node2D"]
+script = ExtResource("1_wf6kh")
+
+[node name="Peon" parent="." instance=ExtResource("2_hs5qc")]
+
+[node name="Alfil" parent="." instance=ExtResource("3_p3w0t")]
+position = Vector2(50, 0)
+
+[node name="Caballo" parent="." instance=ExtResource("4_ipwt6")]
+position = Vector2(100, 0)
+
+[node name="Torre" parent="." instance=ExtResource("5_k1cbw")]
+position = Vector2(150, 0)
+
+[node name="Reina" parent="." instance=ExtResource("6_02pba")]
+position = Vector2(200, 0)
+
+[node name="Rey" parent="." instance=ExtResource("7_ar6lv")]
+position = Vector2(250, 0)
