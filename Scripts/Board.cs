@@ -25,6 +25,8 @@ public partial class Board : Node2D
     private PackedScene[] _enemyScenes = new PackedScene[7];
     private PackedScene _jugador = GD.Load<PackedScene>("res://Scenes/rey_branco.tscn");
     
+    private ReyBranco _playerInstance;
+    private bool _attackMode = false;
 
     [Export]
     private Node2D _pieces;
@@ -207,46 +209,103 @@ public partial class Board : Node2D
         }
     }*/
 
-public void DisplayBoard()
-{
-    // Liberar hijos previos
-    foreach (Node child in _pieces.GetChildren())
-        child.QueueFree();
-
-    int size = BOARD_SIZE;
-    int cell = CELL_WIDTH;
-
-    for (int row = 0; row < size; row++)
+  public void DisplayBoard()
     {
-        for (int col = 0; col < size; col++)
+        // Liberar hijos previos, pero NO eliminar la instancia del jugador si ya está añadida
+        foreach (Node child in _pieces.GetChildren())
         {
-            int piece = _board[row, col];
-            if (piece == 0) continue;
+            // evita eliminar al jugador (si existe y es hijo)
+            if (_playerInstance != null && child == _playerInstance)
+                continue;
+            child.QueueFree();
+        }
 
-            // Si la pieza fue marcada como movida (+10), recuperar tipo base
-            Vector2 position = new Vector2(col * cell + cell / 2f, row * cell + cell / 2f);
-            CharacterBody2D jugador = _jugador.Instantiate<CharacterBody2D>();
-            jugador.Position = position;
-                //cargar el sprite del jugador
-                if(piece == -1)
-                    _pieces.AddChild(jugador);
+        int size = BOARD_SIZE;
+        int cell = CELL_WIDTH;
 
-                // cargar los sprites de los enemigos
-                if (piece > 0)
-                {   
-                var inst = _enemyScenes[piece].Instantiate();
-                if (inst is CharacterBody2D nd)
+        for (int row = 0; row < size; row++)
+        {
+            for (int col = 0; col < size; col++)
+            {
+                int piece = _board[row, col];
+                if (piece == 0) continue;
+
+                int basePiece = piece > 10 ? piece - 10 : piece;
+                Vector2 localPos = CellToLocalPosition(col, row);
+
+                // jugador: instanciar solo una vez y moverla las siguientes veces
+                if (basePiece == -1)
                 {
-                    nd.Position = position;
-                    if (nd is CanvasItem ci) ci.ZIndex = 1;
+                    if (!IsPlayerValid())
+                    {
+                        if (_jugador != null)
+                        {
+                            var jugadorInst = _jugador.Instantiate();
+                            if (jugadorInst is ReyBranco rb)
+                            {
+                                _playerInstance = rb;
+                                _playerInstance.Position = localPos;
+                                _pieces.AddChild(_playerInstance);
+                            }
+                            else if (jugadorInst is Node2D nd)
+                            {
+                                nd.Position = localPos;
+                                _pieces.AddChild(nd);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // mover solo si sigue siendo válido
+                        _playerInstance.MoveToLocalPosition(localPos);
+                    }
 
-                    _pieces.AddChild(nd);
+                    _playerPosition = new Vector2(col, row);
                     continue;
                 }
+
+                // enemigos (tipos 1..6) -> seguimos instanciando como antes
+                if (basePiece >= 1 && basePiece <= 6)
+                {
+                    if (basePiece < _enemyScenes.Length && _enemyScenes[basePiece] != null)
+                    {
+                        var inst = _enemyScenes[basePiece].Instantiate();
+                        if (inst is Node2D nd)
+                        {
+                            AddEnemyInstanceToBoard(nd, col, row);
+                            continue;
+                        }
+                    }
                 }
-            
+
+                 // para cualquier otro valor (por seguridad), se puede instanciar un sprite genérico
+                 Sprite2D holder = (Sprite2D)_piecesTexture.TEXTURE_PLACEHOLDER.Instantiate();
+                 holder.ZAsRelative = false;
+                 holder.ZIndex = 1;
+                 holder.Position = localPos;
+                 AssignTexture(holder, basePiece);
+                 _pieces.AddChild(holder);
+            }
+        }
     }
+
+      private bool IsPlayerValid()
+    {
+        return _playerInstance != null && IsInstanceValid(_playerInstance) && _playerInstance.IsInsideTree();
     }
+
+// convierte celda (col,row) -> posición local centrada dentro del nodo _pieces
+private Vector2 CellToLocalPosition(int col, int row)
+{
+    return new Vector2(col * CELL_WIDTH + CELL_WIDTH / 2f, row * CELL_WIDTH + CELL_WIDTH / 2f);
+}
+
+// añade la instancia al contenedor _pieces y deja su posición en coordenadas locales
+private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
+{
+    inst.Position = CellToLocalPosition(col, row);
+    if (inst is CanvasItem ci) ci.ZIndex = 1;
+    _pieces.AddChild(inst);
 }
         // Asigna la textura correspondiente según el valor entero de la pieza
    private void AssignTexture(Sprite2D holder, int piece)
@@ -339,17 +398,21 @@ public void DisplayBoard()
       // mostrar los puntos de movimiento
     public void show_dots()
     {
+        ClearDots();
+        if (moves == null) return;
+
         foreach (Vector2 i in moves)
         {
             // inicializa la textura del punto de movimiento
             Sprite2D holder = (Sprite2D)_piecesTexture.TEXTURE_PLACEHOLDER.Instantiate();
             holder.Texture = _piecesTexture.PIECES_MOVES;
+            // posición local dentro del nodo _dots (asumiendo que _dots está alineado con el tablero)
             holder.Position = new Vector2(
-                i.X * CELL_WIDTH + (CELL_WIDTH / 2), // X = columna
-                i.Y * CELL_WIDTH + (CELL_WIDTH / 2) // Y = fila
+                i.X * CELL_WIDTH + (CELL_WIDTH / 2f), // X = columna
+                i.Y * CELL_WIDTH + (CELL_WIDTH / 2f)  // Y = fila
                 );
 
-                _dots.AddChild(holder);
+            _dots.AddChild(holder);
         }
     }
 
@@ -370,6 +433,91 @@ public void DisplayBoard()
         SpawnEnemyPiece();
     }
 
+      public void _on_atacar_pressed()
+    {
+        // Entrar en modo ataque: calcular casillas adyacentes y mostrar puntos
+        if (!IsPlayerValid()) return;
+
+        // pedir direcciones al propio Rey (si existe) o usar offsets integrados
+        List<Vector2> directions;
+        if (_playerInstance != null)
+            directions = _playerInstance.GetAttackDirections();
+        else
+            directions = new List<Vector2> {
+                new Vector2(0,-1), new Vector2(1,-1), new Vector2(1,0), new Vector2(1,1),
+                new Vector2(0,1), new Vector2(-1,1), new Vector2(-1,0), new Vector2(-1,-1)
+            };
+
+        // construir lista de objetivos válidos (coordenadas de celda)
+        moves = new List<Vector2>();
+        int px = (int)_playerPosition.X;
+        int py = (int)_playerPosition.Y;
+
+        foreach (var d in directions)
+        {
+            int tx = px + (int)d.X;
+            int ty = py + (int)d.Y;
+            if (tx >= 0 && tx < BOARD_SIZE && ty >= 0 && ty < BOARD_SIZE)
+            {
+                moves.Add(new Vector2(tx, ty));
+            }
+        }
+
+        if (moves.Count > 0)
+        {
+            _attackMode = true;
+            show_dots(); // usa moves para dibujar puntos con PIECES_MOVES
+        }
+    }
+
+    public override void _Input(InputEvent @event)
+    {
+        if (@event is InputEventMouseButton mb && mb.IsPressed() && mb.ButtonIndex == MouseButton.Left)
+        {
+            // si estamos en modo ataque, capturar click en una de las casillas resaltadas
+            if (_attackMode && moves != null && moves.Count > 0)
+            {
+                Vector2 local = _pieces.ToLocal(GetGlobalMousePosition());
+                int col = (int)(local.X / CELL_WIDTH);
+                int row = (int)(local.Y / CELL_WIDTH);
+
+                // validar rango
+                if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE)
+                {
+                    Vector2 target = new Vector2(col, row);
+                    if (moves.Contains(target))
+                    {
+                        // dirección relativa normalizada -1/0/1
+                        int px = (int)_playerPosition.X;
+                        int py = (int)_playerPosition.Y;
+                        int dx = Math.Sign(col - px);
+                        int dy = Math.Sign(row - py);
+                        Vector2 dir = new Vector2(dx, dy);
+
+                        // reproducir animación de ataque en el jugador
+                        if (IsPlayerValid())
+                            _playerInstance.PlayAttack(dir);
+
+                        // si hay un enemigo en la casilla objetivo, eliminarlo del board
+                        if (_board[row, col] > 0)
+                        {
+                            _board[row, col] = 0;
+                            _piecesMovement.setBoard(_board);
+                        }
+
+                        // limpiar estado de selección y puntos
+                        ClearDots();
+                        moves = null;
+                        _attackMode = false;
+
+                        // refrescar vista
+                        DisplayBoard();
+                    }
+                }
+            }
+        }
+    }
+
     public void newTurn()
     {
         int rows = _board.GetLength(0);
@@ -385,19 +533,15 @@ public void DisplayBoard()
         }
     }
 
-    public override void _Input(InputEvent @event)
-    {
-
-      
-    }
         public override void _Process(double delta)
     {
 
     }
     public bool is_mouse_out()
     {
-        Vector2 mousePos = GetGlobalMousePosition();
-        if (mousePos.X < 0 || mousePos.X >= CELL_WIDTH*BOARD_SIZE || mousePos.Y < 0 || mousePos.Y >= CELL_WIDTH*BOARD_SIZE)
+        // convertir la posición global del ratón a la coordenada local del contenedor de piezas
+        Vector2 local = _pieces.ToLocal(GetGlobalMousePosition());
+        if (local.X < 0 || local.X >= CELL_WIDTH * BOARD_SIZE || local.Y < 0 || local.Y >= CELL_WIDTH * BOARD_SIZE)
             return true;
         return false;
     }

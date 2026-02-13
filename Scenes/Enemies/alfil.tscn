@@ -17,6 +17,8 @@ animations = [{
 size = Vector2(21, 32)
 
 [node name="Alfil" type="CharacterBody2D"]
+light_mask = 2
+visibility_layer = 2
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_nsmi0")

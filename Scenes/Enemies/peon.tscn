@@ -17,6 +17,8 @@ animations = [{
 size = Vector2(25, 30)
 
 [node name="Peon" type="CharacterBody2D"]
+light_mask = 2
+visibility_layer = 2
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_mhnfs")
