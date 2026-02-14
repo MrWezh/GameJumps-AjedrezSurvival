@@ -1,7 +1,8 @@
-[gd_scene load_steps=15 format=3 uid="uid://c7kdiwl4ek353"]
+[gd_scene load_steps=13 format=3 uid="uid://c7kdiwl4ek353"]
 
 [ext_resource type="Script" uid="uid://uc3je255myb1" path="res://Scripts/Board.cs" id="1_2wvcj"]
 [ext_resource type="Texture2D" uid="uid://berta8c2x37g4" path="res://Assets/Textures/Captura de pantalla de 2026-01-22 15-55-28.png" id="2_uh3b8"]
+[ext_resource type="Texture2D" uid="uid://bmqnmdg52f3te" path="res://Assets/ChessSurvivalHilizontal.png" id="2_upw65"]
 [ext_resource type="Script" uid="uid://bfkww7fu0blp3" path="res://Scripts/PiecesMovement.cs" id="3_uh3b8"]
 [ext_resource type="Script" uid="uid://c8wisi3lans7m" path="res://Scripts/Enemies.cs" id="4_shhme"]
 [ext_resource type="Script" uid="uid://cracfwgq4rlv4" path="res://Scripts/Hand.cs" id="5_s4i1f"]
@@ -9,10 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://bwb20mlipi8v5" path="res://Scenes/AttackRanged.tscn" id="7_vjsom"]
 [ext_resource type="PackedScene" uid="uid://cet0w5pqegb7i" path="res://Scenes/AttackFireball.tscn" id="8_upw65"]
 [ext_resource type="PackedScene" uid="uid://dy3gk47k2nq6a" path="res://Scenes/Moviment1.tscn" id="9_d7frl"]
-[ext_resource type="Script" uid="uid://cewihafprhhf" path="res://Scripts/Card/AttackRangedCard.cs" id="9_iehwj"]
 [ext_resource type="PackedScene" uid="uid://bdqq6hjdk11bs" path="res://Scenes/Moviment2.tscn" id="10_vjyv8"]
-[ext_resource type="Script" uid="uid://c4fgk32o45pls" path="res://Scripts/Card/AttackFireballCard.cs" id="11_7iy1p"]
-[ext_resource type="Script" uid="uid://b7afp4gl0yper" path="res://Scripts/Card/MovementCard.cs" id="13_o5s4g"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bh37u"]
 size = Vector2(68.09999, 67.4)
@@ -22,6 +20,15 @@ script = ExtResource("1_2wvcj")
 _pieces = NodePath("Pieces")
 _dots = NodePath("Dots")
 
+[node name="TextureRect" type="TextureRect" parent="."]
+texture_filter = 1
+offset_top = -2.0
+offset_right = 1916.6666
+offset_bottom = 1079.6666
+scale = Vector2(0.6, 0.6)
+size_flags_horizontal = 4
+texture = ExtResource("2_upw65")
+
 [node name="BoardSprite" type="Sprite2D" parent="."]
 light_mask = 2
 visibility_layer = 2
@@ -29,6 +36,9 @@ texture_filter = 1
 position = Vector2(548.498, 238.3315)
 scale = Vector2(0.333, 0.333)
 texture = ExtResource("2_uh3b8")
+
+[node name="RemoteTransform2D" type="RemoteTransform2D" parent="BoardSprite"]
+remote_path = NodePath("../../Camera2D")
 
 [node name="Pieces" type="Node2D" parent="."]
 light_mask = 2
@@ -41,8 +51,8 @@ script = ExtResource("3_uh3b8")
 position = Vector2(380.498, 70.3315)
 
 [node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(393.49792, 126.3315)
-offset = Vector2(168, 168)
+position = Vector2(541, 293)
+scale = Vector2(0.333, 0.333)
 enabled = false
 zoom = Vector2(1.4, 1.4)
 
@@ -86,18 +96,14 @@ layout_mode = 2
 
 [node name="AttackRanged" parent="BattleUIs/Hand" instance=ExtResource("7_vjsom")]
 layout_mode = 2
-script = ExtResource("9_iehwj")
 
 [node name="AttackFireball" parent="BattleUIs/Hand" instance=ExtResource("8_upw65")]
 layout_mode = 2
-script = ExtResource("11_7iy1p")
 
 [node name="Moviment1" parent="BattleUIs/Hand" instance=ExtResource("9_d7frl")]
 layout_mode = 2
-script = ExtResource("13_o5s4g")
 
 [node name="Moviment2" parent="BattleUIs/Hand" instance=ExtResource("10_vjyv8")]
 layout_mode = 2
-script = ExtResource("13_o5s4g")
 
 [connection signal="pressed" from="EndTurn" to="." method="_on_button_pressed"]
