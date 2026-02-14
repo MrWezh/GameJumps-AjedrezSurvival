@@ -5,6 +5,8 @@ public partial class Hand : HBoxContainer
 {
     public override void _Ready()
     {
+
+
         foreach (Node child in GetChildren())
         {
             if (child is CardUI cardUi)
@@ -18,4 +20,5 @@ public partial class Hand : HBoxContainer
     {
         child.Reparent(this);
     }
+
 }

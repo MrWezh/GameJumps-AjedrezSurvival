@@ -26,6 +26,7 @@ public partial class Board : Node2D
     private PackedScene _jugador = GD.Load<PackedScene>("res://Scenes/rey_branco.tscn");
     
     private ReyBranco _playerInstance;
+    private CardUI _card;
     private bool _attackMode = false;
 
     [Export]
@@ -44,6 +45,7 @@ public partial class Board : Node2D
         _pieces = GetNode<Node2D>("Pieces");
         _dots = GetNode<Node2D>("Dots");
         _piecesMovement = new PiecesMovement();
+        _card = new CardUI();
 
         _enemyScenes[1] = _enemies._peon;
         _enemyScenes[2] = _enemies._caballo;
@@ -246,6 +248,7 @@ public partial class Board : Node2D
                                 _playerInstance = rb;
                                 _playerInstance.Position = localPos;
                                 _pieces.AddChild(_playerInstance);
+                                _card.setPlayer(_playerInstance); // pasar referencia del jugador a la carta
                             }
                             else if (jugadorInst is Node2D nd)
                             {

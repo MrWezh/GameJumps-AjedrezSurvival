@@ -21,6 +21,9 @@ public partial class CardReleaseState : CardState
         {
             GD.Print("Played card on target: " + card_ui.targets[0].Name);
             played = true;
+            // emitir señal para notificar que la carta fue jugada
+            if (card_ui.targets[0] is Area2D area)
+                card_ui.EmitSignal("CardPlayed", card_ui, area);
         }
     }
     public override void OnInput(InputEvent @event)

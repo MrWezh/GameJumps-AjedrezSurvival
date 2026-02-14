@@ -1,13 +1,8 @@
-[gd_scene load_steps=40 format=3 uid="uid://cv7gic6tv2ba7"]
+[gd_scene load_steps=35 format=3 uid="uid://cv7gic6tv2ba7"]
 
 [ext_resource type="Texture2D" uid="uid://dj05b7y4868wj" path="res://Assets/pieces/ReyBlanco.png" id="1_nfgln"]
 [ext_resource type="Script" uid="uid://cpfufw2xt6kca" path="res://Scripts/ReyBranco.cs" id="1_sriov"]
 [ext_resource type="Texture2D" uid="uid://76d2p70a7od0" path="res://Assets/Habilidades/espada.png" id="2_cdnym"]
-[ext_resource type="Script" uid="uid://ihjgbe8apc7x" path="res://Scripts/StateMachine/StateMachine.cs" id="3_cpmim"]
-[ext_resource type="Script" uid="uid://cnasd7g802h26" path="res://Scripts/StateMachine/Player/AttackMovementState.cs" id="4_y3ug8"]
-[ext_resource type="Script" uid="uid://1hvsp433u6ev" path="res://Scripts/StateMachine/Player/ShootMovementState.cs" id="5_cdnym"]
-[ext_resource type="Script" uid="uid://bhvwy5yym6u4o" path="res://Scripts/StateMachine/Player/FireBallMovementState.cs" id="6_14wsf"]
-[ext_resource type="Script" uid="uid://dkitxrfw6iu4r" path="res://Scripts/StateMachine/Player/IldeMovementState.cs" id="7_io3d3"]
 [ext_resource type="Texture2D" uid="uid://t25xbpjln45q" path="res://Assets/Habilidades/bolaDiFuego.png" id="8_14wsf"]
 [ext_resource type="Texture2D" uid="uid://du6ddrjk6bjs8" path="res://Assets/fondoTransparente.png" id="8_emxbc"]
 [ext_resource type="Texture2D" uid="uid://dyk4x53kbdjcd" path="res://Assets/Habilidades/arco.png" id="9_14wsf"]
@@ -234,22 +229,6 @@ animation = &"idle"
 
 [node name="CollisionShape" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_sriov")
-
-[node name="StateMachine" type="Node" parent="."]
-script = ExtResource("3_cpmim")
-initialState = NodePath("IldeMovementState")
-
-[node name="AttackMovementState" type="Node" parent="StateMachine"]
-script = ExtResource("4_y3ug8")
-
-[node name="ShootMovementState" type="Node" parent="StateMachine"]
-script = ExtResource("5_cdnym")
-
-[node name="FireBallMovementState" type="Node" parent="StateMachine"]
-script = ExtResource("6_14wsf")
-
-[node name="IldeMovementState" type="Node" parent="StateMachine"]
-script = ExtResource("7_io3d3")
 
 [node name="Habilidades" type="AnimatedSprite2D" parent="."]
 light_mask = 3

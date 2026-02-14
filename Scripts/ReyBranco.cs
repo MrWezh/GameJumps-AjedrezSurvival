@@ -27,6 +27,40 @@ public partial class ReyBranco : CharacterBody2D
             animatedSprite.Play(animName);
         }
     }
+
+    // Invocado por Hand cuando se juega una carta
+    public void UseCard(string cardId, Area2D target)
+    {
+        if (string.IsNullOrEmpty(cardId))
+            return;
+
+        var key = cardId.ToLower();
+
+        if (key.Contains("attack") || key.Contains("ataque") || key.Contains("espada"))
+        {
+            setAnimation("attack");
+        }
+        else if (key.Contains("shoot") || key.Contains("arco") )
+        {
+            setAnimation("shoot");
+        }
+        else if (key.Contains("fire") || key.Contains("bola") || key.Contains("fuego"))
+        {
+            setAnimation("fireball");
+        }
+        else
+        {
+            // fallback: intentar reproducir una animación con el mismo nombre
+            setAnimation(cardId);
+        }
+
+        // opcional: mirar hacia el target si existe
+        if (target != null)
+        {
+            Vector2 dir = (target.GlobalPosition - GlobalPosition).Normalized();
+            // puedes usar dir para elegir animación en 4 direcciones o ajustar sprite
+        }
+    }
     	    public void PlayAttack(Vector2 dir)
     {
         if (animatedSprite == null) return;
@@ -58,5 +92,29 @@ public partial class ReyBranco : CharacterBody2D
             new Vector2(0, 1),    // abajo
             new Vector2(-1, 0),   // izquierda
         };
+    }
+
+     public void UseCard(string cardId, Vector2? target)
+    {
+        switch(cardId)
+        {
+            case "attack":
+                StartMeleeAttack(target);
+                break;
+            case "shoot":
+                //StartRangedAttack(target);
+                break;
+            case "fireball":
+                //StartFireball(target);
+                break;
+        }
+    }
+
+    private void StartMeleeAttack(Vector2? target)
+    {
+        // activar animación y lógica; usar tu StateMachine: cambiar estado a AttackState
+        // ejemplo corto:
+        
+        // Lógica de daño / dirección según target o board
     }
 }
