@@ -18,8 +18,16 @@ public partial class ReyBranco : CharacterBody2D
         Position = localPos;
     }
 
-    // llamado por Board para reproducir la animación de ataque en una dirección (dx,dy) con componentes -1..0..1
-    public void PlayAttack(Vector2 dir)
+    // llamado por Board para reproducir la animación de ataque en una dirección (dx,dy) con componentes -1..0..
+
+    public void setAnimation(string animName)
+    {
+        if (animatedSprite != null)
+        {
+            animatedSprite.Play(animName);
+        }
+    }
+    	    public void PlayAttack(Vector2 dir)
     {
         if (animatedSprite == null) return;
 
@@ -39,16 +47,6 @@ public partial class ReyBranco : CharacterBody2D
         // aplicar rotación al sprite/elemento de "Habilidades"
         animatedSprite.RotationDegrees = angleDeg;
 
-        // reproducir la animación de ataque (asegúrate que "attack" no esté en loop)
-        setAnimation("attack");
-    }
-
-    public void setAnimation(string animName)
-    {
-        if (animatedSprite != null)
-        {
-            animatedSprite.Play(animName);
-        }
     }
 
     // NUEVO: devuelve las 4 direcciones relativas alrededor del jugador (orden: arriba, derecha, abajo, izquierda)
