@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3 uid="uid://cv7gic6tv2ba7"]
+[gd_scene load_steps=34 format=3 uid="uid://cv7gic6tv2ba7"]
 
 [ext_resource type="Texture2D" uid="uid://dj05b7y4868wj" path="res://Assets/pieces/ReyBlanco.png" id="1_nfgln"]
 [ext_resource type="Script" uid="uid://cpfufw2xt6kca" path="res://Scripts/ReyBranco.cs" id="1_sriov"]
@@ -6,7 +6,6 @@
 [ext_resource type="Texture2D" uid="uid://t25xbpjln45q" path="res://Assets/Habilidades/bolaDiFuego.png" id="8_14wsf"]
 [ext_resource type="Texture2D" uid="uid://du6ddrjk6bjs8" path="res://Assets/fondoTransparente.png" id="8_emxbc"]
 [ext_resource type="Texture2D" uid="uid://dyk4x53kbdjcd" path="res://Assets/Habilidades/arco.png" id="9_14wsf"]
-[ext_resource type="Script" uid="uid://cvmea7gyqk8wl" path="res://Scripts/Habilidades.cs" id="11_l3m16"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_xygb1"]
 animations = [{
@@ -182,6 +181,9 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_qia12")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_emxbc")
 }],
 "loop": true,
 "name": &"fireBall",
@@ -213,10 +215,13 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_4j5dw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_emxbc")
 }],
 "loop": false,
 "name": &"shoot",
-"speed": 5.0
+"speed": 15.0
 }]
 
 [node name="ReyBranco" type="CharacterBody2D"]
@@ -236,7 +241,8 @@ visibility_layer = 3
 texture_filter = 1
 scale = Vector2(4, 4)
 sprite_frames = SubResource("SpriteFrames_tb2ig")
-animation = &"idle"
-script = ExtResource("11_l3m16")
+animation = &"fireBall"
+frame = 8
+frame_progress = 0.6115745
 
 [connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]

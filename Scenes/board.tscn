@@ -6,11 +6,11 @@
 [ext_resource type="Script" uid="uid://bfkww7fu0blp3" path="res://Scripts/PiecesMovement.cs" id="3_uh3b8"]
 [ext_resource type="Script" uid="uid://c8wisi3lans7m" path="res://Scripts/Enemies.cs" id="4_shhme"]
 [ext_resource type="Script" uid="uid://cracfwgq4rlv4" path="res://Scripts/Hand.cs" id="5_s4i1f"]
-[ext_resource type="PackedScene" uid="uid://cwkw6idjyh70a" path="res://Scenes/AttackMeleCard.tscn" id="6_bh37u"]
-[ext_resource type="PackedScene" uid="uid://bwb20mlipi8v5" path="res://Scenes/AttackRanged.tscn" id="7_vjsom"]
-[ext_resource type="PackedScene" uid="uid://cet0w5pqegb7i" path="res://Scenes/AttackFireball.tscn" id="8_upw65"]
-[ext_resource type="PackedScene" uid="uid://dy3gk47k2nq6a" path="res://Scenes/Moviment1.tscn" id="9_d7frl"]
-[ext_resource type="PackedScene" uid="uid://bdqq6hjdk11bs" path="res://Scenes/Moviment2.tscn" id="10_vjyv8"]
+[ext_resource type="PackedScene" uid="uid://c5jogbk6nphy7" path="res://Scenes/Cards/mele_attack.tscn" id="12_d7frl"]
+[ext_resource type="PackedScene" uid="uid://bne7jyyba7qp0" path="res://Scenes/Cards/Ranged_attack.tscn" id="13_7iy1p"]
+[ext_resource type="PackedScene" uid="uid://bnd88ert10d0q" path="res://Scenes/Cards/FireBall_attack.tscn" id="14_o5s4g"]
+[ext_resource type="PackedScene" uid="uid://sbb6djfbuopx" path="res://Scenes/Cards/Move1.tscn" id="15_2cdyc"]
+[ext_resource type="PackedScene" uid="uid://s3svfst2pvoe" path="res://Scenes/Cards/Move2.tscn" id="16_qjv7d"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bh37u"]
 size = Vector2(68.09999, 67.4)
@@ -51,7 +51,7 @@ script = ExtResource("3_uh3b8")
 position = Vector2(380.498, 70.3315)
 
 [node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(541, 293)
+position = Vector2(548.498, 238.3315)
 scale = Vector2(0.333, 0.333)
 enabled = false
 zoom = Vector2(1.4, 1.4)
@@ -91,19 +91,28 @@ theme_override_constants/separation = 20
 alignment = 1
 script = ExtResource("5_s4i1f")
 
-[node name="AttackMele" parent="BattleUIs/Hand" instance=ExtResource("6_bh37u")]
+[node name="MeleAttack" parent="BattleUIs/Hand" instance=ExtResource("12_d7frl")]
+clip_contents = true
+custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+text = "....................."
 
-[node name="AttackRanged" parent="BattleUIs/Hand" instance=ExtResource("7_vjsom")]
+[node name="RangedAttack" parent="BattleUIs/Hand" instance=ExtResource("13_7iy1p")]
 layout_mode = 2
+text = "....................."
 
-[node name="AttackFireball" parent="BattleUIs/Hand" instance=ExtResource("8_upw65")]
+[node name="FireBallAttack" parent="BattleUIs/Hand" instance=ExtResource("14_o5s4g")]
 layout_mode = 2
+text = "....................."
 
-[node name="Moviment1" parent="BattleUIs/Hand" instance=ExtResource("9_d7frl")]
+[node name="Move1" parent="BattleUIs/Hand" instance=ExtResource("15_2cdyc")]
 layout_mode = 2
+text = "....................."
 
-[node name="Moviment2" parent="BattleUIs/Hand" instance=ExtResource("10_vjyv8")]
+[node name="Move2" parent="BattleUIs/Hand" instance=ExtResource("16_qjv7d")]
 layout_mode = 2
+text = "....................."
 
 [connection signal="pressed" from="EndTurn" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="BattleUIs/Hand/MeleAttack" to="." method="_on_mele_attack_pressed"]
+[connection signal="pressed" from="BattleUIs/Hand/RangedAttack" to="." method="_on_ranged_attack_pressed"]

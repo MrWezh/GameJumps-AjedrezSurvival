@@ -28,40 +28,7 @@ public partial class ReyBranco : CharacterBody2D
         }
     }
 
-    // Invocado por Hand cuando se juega una carta
-    public void UseCard(string cardId, Area2D target)
-    {
-        if (string.IsNullOrEmpty(cardId))
-            return;
-
-        var key = cardId.ToLower();
-
-        if (key.Contains("attack") || key.Contains("ataque") || key.Contains("espada"))
-        {
-            setAnimation("attack");
-        }
-        else if (key.Contains("shoot") || key.Contains("arco") )
-        {
-            setAnimation("shoot");
-        }
-        else if (key.Contains("fire") || key.Contains("bola") || key.Contains("fuego"))
-        {
-            setAnimation("fireball");
-        }
-        else
-        {
-            // fallback: intentar reproducir una animación con el mismo nombre
-            setAnimation(cardId);
-        }
-
-        // opcional: mirar hacia el target si existe
-        if (target != null)
-        {
-            Vector2 dir = (target.GlobalPosition - GlobalPosition).Normalized();
-            // puedes usar dir para elegir animación en 4 direcciones o ajustar sprite
-        }
-    }
-    	    public void PlayAttack(Vector2 dir)
+    public void PlayMeleAttack(Vector2 dir)
     {
         if (animatedSprite == null) return;
 
@@ -80,8 +47,36 @@ public partial class ReyBranco : CharacterBody2D
 
         // aplicar rotación al sprite/elemento de "Habilidades"
         animatedSprite.RotationDegrees = angleDeg;
+        // reproducir animación de ataque (asumiendo que se llama "Attack")
+        setAnimation("attack");
 
     }
+
+    
+    public void PlayRangedAttack(Vector2 dir)
+    {
+        if (animatedSprite == null) return;
+
+        // normalizar dirección a componentes enteras -1,0,1
+        int dx = Math.Sign(dir.X);
+        int dy = Math.Sign(dir.Y);
+
+        // mapear a ángulo en grados (0 = arriba)
+        float angleDeg = 0f;
+        if (dx == -1 && dy == -1)      angleDeg = -45f;    // arriba izquierda (diagonal)
+        else if (dx == 1 && dy == -1) angleDeg = 45f;   // arriba derecha (diagonal)
+        else if (dx == 1 && dy == 1)  angleDeg = 135f;   // abajo derecha (diagonal)
+        else if (dx == -1 && dy == 1) angleDeg = -135f;  // abajo izquierda (diagonal)
+        else
+            angleDeg = 0f; // fallback para diagonales u otros casos
+
+        // aplicar rotación al sprite/elemento de "Habilidades"
+        animatedSprite.RotationDegrees = angleDeg;
+        // reproducir animación de ataque (asumiendo que se llama "Attack")
+        setAnimation("shoot");
+    }
+
+
 
     // NUEVO: devuelve las 4 direcciones relativas alrededor del jugador (orden: arriba, derecha, abajo, izquierda)
     public List<Vector2> GetAttackDirections()
@@ -94,27 +89,4 @@ public partial class ReyBranco : CharacterBody2D
         };
     }
 
-     public void UseCard(string cardId, Vector2? target)
-    {
-        switch(cardId)
-        {
-            case "attack":
-                StartMeleeAttack(target);
-                break;
-            case "shoot":
-                //StartRangedAttack(target);
-                break;
-            case "fireball":
-                //StartFireball(target);
-                break;
-        }
-    }
-
-    private void StartMeleeAttack(Vector2? target)
-    {
-        // activar animación y lógica; usar tu StateMachine: cambiar estado a AttackState
-        // ejemplo corto:
-        
-        // Lógica de daño / dirección según target o board
-    }
 }

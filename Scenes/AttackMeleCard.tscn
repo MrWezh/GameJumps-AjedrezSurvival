@@ -10,16 +10,19 @@
 [ext_resource type="Script" uid="uid://c3f3cxwl3k1rm" path="res://Scripts/Card/cardStage/CardReleaseState.cs" id="8_y16af"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_nhgih"]
-size = Vector2(125, 151)
+size = Vector2(125, 153)
 
 [node name="AttackMeleCard" type="Control"]
 custom_minimum_size = Vector2(125, 150)
 layout_mode = 3
-anchors_preset = 15
+anchor_left = -0.056
+anchor_top = -0.056
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = -1155.0
-offset_bottom = -570.0
+offset_left = 0.51200104
+offset_top = 0.288002
+offset_right = -1091.0
+offset_bottom = -534.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("1_6qxwv")
@@ -28,9 +31,10 @@ script = ExtResource("2_lp0xi")
 [node name="Borde" type="ColorRect" parent="."]
 texture_filter = 1
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
+anchors_preset = -1
+anchor_right = 0.94400007
 anchor_bottom = 1.0
+offset_right = 6.9999924
 offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -41,15 +45,13 @@ color = Color(0, 0, 0, 1)
 texture_filter = 1
 custom_minimum_size = Vector2(120, 145)
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -62.5
-offset_top = -76.0
-offset_right = 145.83334
-offset_bottom = 180.0
+anchors_preset = -1
+anchor_top = -0.007
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 0.05000007
+offset_right = 83.33333
+offset_bottom = 105.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.6, 0.6)
@@ -58,9 +60,10 @@ texture = ExtResource("3_lp0xi")
 
 [node name="State" type="Label" parent="."]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
+anchors_preset = -1
+anchor_right = 0.99200004
 anchor_bottom = 1.0
+offset_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 text = "state"
@@ -90,6 +93,13 @@ script = ExtResource("7_hu3ph")
 
 [node name="CardReleaseState" type="Node" parent="CardStateMachine"]
 script = ExtResource("8_y16af")
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0270001
+offset_bottom = -0.05000305
 
 [connection signal="gui_input" from="." to="." method="_GuiInput"]
 [connection signal="mouse_entered" from="." to="." method="_MouseEntered"]

@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3 uid="uid://c5jogbk6nphy7"]
+
+[ext_resource type="Texture2D" uid="uid://bxibp2opknpga" path="res://Assets/Cards/espadaCarta.png" id="1_67mp0"]
+
+[node name="MeleAttack" type="Button"]
+anchors_preset = -1
+anchor_right = 0.086
+anchor_bottom = 0.23500001
+offset_right = 1.9279938
+offset_bottom = 1.719986
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 168.0
+offset_bottom = 256.0
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("1_67mp0")

@@ -10,6 +10,7 @@ public partial class PiecesMovement : Node2D
 	public int[,] board;
 	public int BOARD_SIZE;
 	private Vector2 _playerPosition;
+	private Random _random = new Random();
 
 	public PiecesMovement()
 	{
@@ -249,6 +250,33 @@ public partial class PiecesMovement : Node2D
             return true;
         return false;
     }
+
+    /// <summary>
+    /// Obtiene una lista de todos los movimientos posibles para un peón.
+    /// </summary>
+    public List<Vector2> get_all_pawn_moves(int x, int y)
+    {
+        List<Vector2> moves = new List<Vector2>();
+        Vector2[] directions = new Vector2[] 
+        { 
+            new Vector2(1,1), new Vector2(1,-1), 
+            new Vector2(-1,1), new Vector2(-1,-1),
+            new Vector2(0, 1), new Vector2(1, 0), 
+            new Vector2(0, -1), new Vector2(-1, 0)
+        };
+
+        Vector2 start = new Vector2(x, y);
+        foreach (Vector2 dir in directions)
+        {
+            Vector2 nextPos = start + dir;
+            if (isValidPosition(nextPos) && is_empty(nextPos))
+            {
+                moves.Add(nextPos);
+            }
+        }
+        return moves;
+    }
+
 
 
 }

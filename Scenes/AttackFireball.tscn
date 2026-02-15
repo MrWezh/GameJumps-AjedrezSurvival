@@ -2,7 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://mltn2dldpd4u" path="res://main_theme.tres" id="1_jxdwl"]
 [ext_resource type="Script" uid="uid://c4fgk32o45pls" path="res://Scripts/Card/AttackFireballCard.cs" id="2_gvo8g"]
-[ext_resource type="Texture2D" uid="uid://gtfie2r8l0p1" path="res://Assets/Cards/PlantillaCarta.png" id="3_3qmky"]
+[ext_resource type="Texture2D" uid="uid://blef2485mbd08" path="res://Assets/Cards/fireBallCard.png" id="3_gvo8g"]
 [ext_resource type="Script" uid="uid://dwjt8d7dnhuga" path="res://Scripts/Card/CardStateMachine.cs" id="4_tf526"]
 [ext_resource type="Script" uid="uid://cn6vllfwc01be" path="res://Scripts/Card/cardStage/CardBaseState.cs" id="5_ww551"]
 [ext_resource type="Script" uid="uid://d1ra3tkw07dgr" path="res://Scripts/Card/cardStage/CardClickedState.cs" id="6_j4bx7"]
@@ -10,7 +10,7 @@
 [ext_resource type="Script" uid="uid://c3f3cxwl3k1rm" path="res://Scripts/Card/cardStage/CardReleaseState.cs" id="8_3t3aq"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_nhgih"]
-size = Vector2(125, 150)
+size = Vector2(125, 149)
 
 [node name="AttackFireball" type="Control"]
 custom_minimum_size = Vector2(125, 150)
@@ -28,9 +28,11 @@ script = ExtResource("2_gvo8g")
 [node name="Borde" type="ColorRect" parent="."]
 texture_filter = 1
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = -1
 anchor_right = 1.0
-anchor_bottom = 1.0
+anchor_bottom = 0.97300005
+offset_left = 1.0
+offset_bottom = 0.049987793
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -40,37 +42,42 @@ color = Color(0, 0, 0, 1)
 texture_filter = 1
 custom_minimum_size = Vector2(120, 145)
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -60.0
-offset_top = -72.5
-offset_right = 60.0
-offset_bottom = 72.5
+anchors_preset = -1
+anchor_top = -0.033
+anchor_right = 1.0
+anchor_bottom = 0.99100006
+offset_left = 1.9999982
+offset_top = 5.9499984
+offset_right = 51.285706
+offset_bottom = 62.349976
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(0.7, 0.7)
 mouse_filter = 2
-texture = ExtResource("3_3qmky")
+texture = ExtResource("3_gvo8g")
 
 [node name="State" type="Label" parent="."]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = -1
+anchor_top = -0.033
 anchor_right = 1.0
-anchor_bottom = 1.0
+anchor_bottom = 0.99300003
+offset_left = 1.0
+offset_top = 5.95
+offset_bottom = 0.049987793
 grow_horizontal = 2
 grow_vertical = 2
 text = "state"
 horizontal_alignment = 1
 
 [node name="DropPointDetector" type="Area2D" parent="."]
+position = Vector2(1, 16)
 collision_mask = 2
 monitoring = false
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DropPointDetector"]
-position = Vector2(62.5, 75)
+position = Vector2(62.5, 58.5)
 shape = SubResource("RectangleShape2D_nhgih")
 
 [node name="CardStateMachine" type="Node" parent="." node_paths=PackedStringArray("initialState")]

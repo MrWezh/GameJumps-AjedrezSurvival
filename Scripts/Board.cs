@@ -27,7 +27,10 @@ public partial class Board : Node2D
     
     private ReyBranco _playerInstance;
     private CardUI _card;
-    private bool _attackMode = false;
+    private bool _MeleaAttackMode = false;
+    private bool _RangedAttackMode = false;
+    private bool _FireBallAttackMode = false;
+    private bool _MovimentMode = false;
 
     [Export]
     private Node2D _pieces;
@@ -57,6 +60,7 @@ public partial class Board : Node2D
         InitializeBoard();
         SpawnEnemyPiece();
         DisplayBoard();
+        _playerInstance.setAnimation("idle");
 
     }
     public void InitializeBoard()
@@ -170,46 +174,208 @@ public partial class Board : Node2D
         return casillasDisponibles;
     }
 
-    //Funcion para mostrar las piezas en el tablero
-   /* public void DisplayBoard()
+
+    private void HandleAttackMele(InputEvent @event)
     {
-        // Liberar hijos previos (si se vuelve a dibujar)
-        foreach (Node child in _pieces.GetChildren())
+        if (@event is InputEventMouseButton mb && mb.IsPressed() && mb.ButtonIndex == MouseButton.Left)
         {
-            // QueueFree para liberar correctamente los nodos instanciados
-            child.QueueFree();
-        }
-
-        // Local copies for faster access
-        int size = BOARD_SIZE;
-        int cell = CELL_WIDTH;
-        var textures = _piecesTexture;
-
-        for (int row = 0; row < size; row++)
-        {
-            for (int col = 0; col < size; col++)
+            // si estamos en modo ataque, capturar click en una de las casillas resaltadas
+            if (moves != null && moves.Count > 0)
             {
-                int piece = _board[row, col];
-                if (piece == 0)
-                    continue; // evitar instanciar para celdas vacías
+                Vector2 local = _pieces.ToLocal(GetGlobalMousePosition());
+                int col = (int)(local.X / CELL_WIDTH);
+                int row = (int)(local.Y / CELL_WIDTH);
 
-                // Calcular posición del centro de la celda (float)
-                Vector2 position = new Vector2(col * cell + cell / 2f, row * cell + cell / 2f);
+                // validar rango
+                if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE)
+                {
+                    Vector2 target = new Vector2(col, row);
+                    if (moves.Contains(target))
+                    {
+                        // dirección relativa normalizada -1/0/1
+                        int px = (int)_playerPosition.X;
+                        int py = (int)_playerPosition.Y;
+                        int dx = Math.Sign(col - px);
+                        int dy = Math.Sign(row - py);
+                        Vector2 dir = new Vector2(dx, dy);
 
+                        // reproducir animación de ataque en el jugador
+                        if (IsPlayerValid())
+                            _playerInstance.PlayMeleAttack(dir);
+                        ExecuteMeleAttack(px, py, dx, dy);
 
-
-                // Instanciar y preparar el sprite solo cuando hay pieza
-                Sprite2D holder = (Sprite2D)textures.TEXTURE_PLACEHOLDER.Instantiate();
-                holder.ZAsRelative = false;
-                holder.ZIndex = 1;
-                holder.Position = position;
-
-                AssignTexture(holder, piece);
-
-                _pieces.AddChild(holder);
+                        // limpiar estado de selección y puntos
+                        ClearDots();
+                        moves = null;
+                        _MeleaAttackMode = false;
+                        // refrescar vista
+                        DisplayBoard();
+                    }
+                }
             }
         }
-    }*/
+    }
+
+    private void ExecuteMeleAttack(int startX, int startY, int dirX, int dirY)
+    {
+        
+        int targetX = startX + dirX;
+        int targetY = startY + dirY;
+
+        
+        if(!_piecesMovement.isValidPosition(new Vector2(targetX, targetY)))
+         return;
+        _board[targetY, targetX] = 0; // eliminar pieza enemiga (si existe)
+         
+        if(dirY != 0)
+        {
+            if(targetX + 1 < BOARD_SIZE)
+            _board[targetY, targetX+1] = 0;
+            if(targetX - 1 >= 0)
+            _board[targetY, targetX-1] = 0;
+        }
+        else
+        {
+            if(targetY + 1 < BOARD_SIZE)
+            _board[targetY+1, targetX] = 0;
+            if(targetY - 1 >= 0)
+            _board[targetY-1, targetX] = 0;
+        }
+        _piecesMovement.setBoard(_board);
+    }
+
+    private void HandleAttackRangeShow()
+    {
+        // Mostrar opciones de ataque en diagonales
+        moves = new List<Vector2>();
+        int px = (int)_playerPosition.X;
+        int py = (int)_playerPosition.Y;
+        
+        // Solo diagonales
+        List<Vector2> directions = new List<Vector2>
+        {
+            new Vector2(1, 1), new Vector2(1, -1), new Vector2(-1, 1), new Vector2(-1, -1)
+        };
+
+        foreach (var d in directions)
+        {
+            for (int i = 1; i < 5; i++)
+            {
+                int tx = px + (int)d.X;
+                int ty = py + (int)d.Y;
+                if (tx >= 0 && tx < BOARD_SIZE && ty >= 0 && ty < BOARD_SIZE)
+                {
+                    moves.Add(new Vector2(tx, ty));
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        if (moves.Count > 0)
+        {
+            show_dots();
+        }
+    }
+
+    private void HandleAttackRange(InputEvent @event)
+    {
+        // Maneja el clic para ataque en diagonales
+        if (@event is InputEventMouseButton mb && mb.IsPressed() && mb.ButtonIndex == MouseButton.Left)
+        {
+            if (moves != null && moves.Count > 0)
+            {
+                Vector2 local = _pieces.ToLocal(GetGlobalMousePosition());
+                int col = (int)(local.X / CELL_WIDTH);
+                int row = (int)(local.Y / CELL_WIDTH);
+
+                // validar rango
+                if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE)
+                {
+                    Vector2 target = new Vector2(col, row);
+                    if (moves.Contains(target))
+                    {
+                        // dirección relativa normalizada -1/0/1
+                        int px = (int)_playerPosition.X;
+                        int py = (int)_playerPosition.Y;
+                        int dx = Math.Sign(col - px);
+                        int dy = Math.Sign(row - py);
+                        Vector2 dir = new Vector2(dx, dy);
+
+                        // reproducir animación de ataque con rotación en el jugador
+                        if (IsPlayerValid())
+                            _playerInstance.PlayRangedAttack(dir);
+
+                        ExecuteRangeAttack(px, py, dx, dy);
+
+                        // limpiar estado de selección y puntos
+                        ClearDots();
+                        moves = null;
+                        _RangedAttackMode = false;
+                        // refrescar vista
+                        DisplayBoard();
+                    }
+                }
+            }
+        }
+    }
+
+    public void ExecuteRangeAttack(int startX, int startY, int dirX, int dirY)
+    {
+        // Lógica para eliminar piezas en la dirección dada (puede ser más compleja según alcance, obstáculos, etc.)
+        for (int i = 1; i < 5; i++)
+        {
+            int targetX = startX + dirX * i;
+            int targetY = startY + dirY * i;
+
+            if (!_piecesMovement.isValidPosition(new Vector2(targetX, targetY)))
+                break;
+
+            if (_board[targetY, targetX] > 0 && _board[targetY, targetX] <= 6)
+            {
+                _board[targetY, targetX] = 0; // eliminar piezas enemigas
+            }
+        }
+        _piecesMovement.setBoard(_board);
+    }
+
+    private void HandleAttackFireball()
+    {
+        
+    }
+
+    private void HandleMovement1()
+    {
+       
+    }
+
+    private void HandleMovement2()
+    {
+    
+    }
+
+    private void ExecutePlayerMovement(Vector2 newPosition)
+    {
+        // Mover al jugador en el tablero
+        _board[(int)_playerPosition.Y, (int)_playerPosition.X] = 0;
+        _board[(int)newPosition.Y, (int)newPosition.X] = -1;
+        _playerPosition = newPosition;
+        
+        // Actualizar la instancia visual del jugador
+        if (IsPlayerValid())
+        {
+            Vector2 localPos = CellToLocalPosition((int)newPosition.X, (int)newPosition.Y);
+            _playerInstance.MoveToLocalPosition(localPos);
+        }
+        
+        // Actualizar el tablero en PiecesMovement
+        _piecesMovement.setBoard(_board);
+        
+        // Refrescar la vista
+        DisplayBoard();
+    }
 
   public void DisplayBoard()
     {
@@ -290,6 +456,7 @@ public partial class Board : Node2D
                  _pieces.AddChild(holder);
             }
         }
+        
     }
 
       private bool IsPlayerValid()
@@ -343,7 +510,6 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
         }
     }
     // mostrar las opciones de movimiento
-
     public void enemies_movement()
     {
         // lógica para mover las piezas enemigas automáticamente
@@ -436,88 +602,28 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
         SpawnEnemyPiece();
     }
 
-      public void _on_atacar_pressed()
-    {
-        // Entrar en modo ataque: calcular casillas adyacentes y mostrar puntos
-        if (!IsPlayerValid()) return;
-
-        // pedir direcciones al propio Rey (si existe) o usar offsets integrados
-        List<Vector2> directions;
-        if (_playerInstance != null)
-            directions = _playerInstance.GetAttackDirections();
-        else
-            directions = new List<Vector2> {
-                new Vector2(0,-1), new Vector2(1,-1), new Vector2(1,0), new Vector2(1,1),
-                new Vector2(0,1), new Vector2(-1,1), new Vector2(-1,0), new Vector2(-1,-1)
-            };
-
-        // construir lista de objetivos válidos (coordenadas de celda)
-        moves = new List<Vector2>();
-        int px = (int)_playerPosition.X;
-        int py = (int)_playerPosition.Y;
-
-        foreach (var d in directions)
-        {
-            int tx = px + (int)d.X;
-            int ty = py + (int)d.Y;
-            if (tx >= 0 && tx < BOARD_SIZE && ty >= 0 && ty < BOARD_SIZE)
-            {
-                moves.Add(new Vector2(tx, ty));
-            }
-        }
-
-        if (moves.Count > 0)
-        {
-            _attackMode = true;
-            show_dots(); // usa moves para dibujar puntos con PIECES_MOVES
-        }
-    }
 
     public override void _Input(InputEvent @event)
     {
-        if (@event is InputEventMouseButton mb && mb.IsPressed() && mb.ButtonIndex == MouseButton.Left)
+        if(_MeleaAttackMode)
         {
-            // si estamos en modo ataque, capturar click en una de las casillas resaltadas
-            if (_attackMode && moves != null && moves.Count > 0)
-            {
-                Vector2 local = _pieces.ToLocal(GetGlobalMousePosition());
-                int col = (int)(local.X / CELL_WIDTH);
-                int row = (int)(local.Y / CELL_WIDTH);
-
-                // validar rango
-                if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE)
-                {
-                    Vector2 target = new Vector2(col, row);
-                    if (moves.Contains(target))
-                    {
-                        // dirección relativa normalizada -1/0/1
-                        int px = (int)_playerPosition.X;
-                        int py = (int)_playerPosition.Y;
-                        int dx = Math.Sign(col - px);
-                        int dy = Math.Sign(row - py);
-                        Vector2 dir = new Vector2(dx, dy);
-
-                        // reproducir animación de ataque en el jugador
-                        if (IsPlayerValid())
-                            _playerInstance.PlayAttack(dir);
-
-                        // si hay un enemigo en la casilla objetivo, eliminarlo del board
-                        if (_board[row, col] > 0)
-                        {
-                            _board[row, col] = 0;
-                            _piecesMovement.setBoard(_board);
-                        }
-
-                        // limpiar estado de selección y puntos
-                        ClearDots();
-                        moves = null;
-                        _attackMode = false;
-
-                        // refrescar vista
-                        DisplayBoard();
-                    }
-                }
-            }
+            HandleAttackMele(@event);
+            // El flag se resetea dentro de HandleAttackMele cuando se completa la acción
+        }
+        if(_RangedAttackMode)
+        {
+            HandleAttackRange(@event);
+            // El flag se resetea dentro de HandleAttackRange cuando se completa la acción
+        }
+        if(_FireBallAttackMode)        
+        {
+            HandleAttackFireball();
+            _FireBallAttackMode = false;
+        }
+        if(_MovimentMode)
+        {
+            HandleMovement1();
+            _MovimentMode = false;
         }
     }
 
@@ -548,6 +654,77 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
             return true;
         return false;
     }
+
+    public void _on_mele_attack_pressed()
+    {
+        _RangedAttackMode = false;
+        _FireBallAttackMode = false;
+        _MovimentMode = false;
+           // Entrar en modo ataque: calcular casillas adyacentes y mostrar puntos
+        if (!IsPlayerValid()) return;
+
+        List<Vector2> directions;
+            directions = new List<Vector2> {
+                new Vector2(0,-1), new Vector2(1,0),
+                new Vector2(0,1), new Vector2(-1,0)
+            };
+
+        // construir lista de objetivos válidos (coordenadas de celda)
+        moves = new List<Vector2>();
+        int px = (int)_playerPosition.X;
+        int py = (int)_playerPosition.Y;
+
+        foreach (var d in directions)
+        {
+            int tx = px + (int)d.X;
+            int ty = py + (int)d.Y;
+            if (tx >= 0 && tx < BOARD_SIZE && ty >= 0 && ty < BOARD_SIZE)
+            {
+                moves.Add(new Vector2(tx, ty));
+            }
+        }
+
+        if (moves.Count > 0)
+        {
+            _MeleaAttackMode = true;
+            show_dots(); // usa moves para dibujar puntos con PIECES_MOVES
+        }
+
+        
+    }
+
+    public void _on_ranged_attack_pressed()
+    {
+        _MeleaAttackMode = false;
+        _FireBallAttackMode = false;
+        _MovimentMode = false;
+        // Entrar en modo ataque a rango: mostrar diagonales
+        if (!IsPlayerValid()) return;
+
+        HandleAttackRangeShow();
+
+        if (moves != null && moves.Count > 0)
+        {
+            _RangedAttackMode = true;
+        }
+    }
+
+    public void _on_fire_ball_attack_pressed()
+    {
+        _MeleaAttackMode = false;
+        _RangedAttackMode = false;
+        _MovimentMode = false;
+        // Entrar en modo ataque de bola de fuego: mostrar área de efecto (ejemplo: 3x3 alrededor del jugador)
+        if (!IsPlayerValid()) return;
+
+        // Aquí podrías calcular las casillas dentro de un área de efecto y mostrarlas con puntos
+        // Luego, al hacer clic, ejecutar la lógica para eliminar piezas dentro de esa área
+        
+
+        _FireBallAttackMode = true;
+    }
+
+
 
     public void gameOver(){
         GetTree().ChangeSceneToFile("res://Scenes/GameOver.tscn"); 
