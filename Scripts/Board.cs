@@ -341,9 +341,40 @@ public partial class Board : Node2D
         _piecesMovement.setBoard(_board);
     }
 
-    private void HandleAttackFireball()
+    private void HandleAttackFireball(InputEvent @event)
     {
-        
+        if (@event is InputEventMouseButton mb && mb.IsPressed() && mb.ButtonIndex == MouseButton.Left)
+        {
+            if (moves != null && moves.Count > 0)
+            {
+                Vector2 local = _pieces.ToLocal(GetGlobalMousePosition());
+                int col = (int)(local.X / CELL_WIDTH);
+                int row = (int)(local.Y / CELL_WIDTH);
+
+                if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE)
+                {
+                    Vector2 target = new Vector2(col, row);
+                    if (moves.Contains(target))
+                    {
+                        // Dirección relativa para orientar animación
+                        int px = (int)_playerPosition.X;
+                        int py = (int)_playerPosition.Y;
+                        int dx = Math.Sign(col - px);
+                        int dy = Math.Sign(row - py);
+
+                        if (IsPlayerValid())
+                            _playerInstance.PlayRangedAttack(new Vector2(dx, dy));
+
+                        ExecuteFireballAttack(col, row);
+
+                        ClearDots();
+                        moves = null;
+                        _FireBallAttackMode = false;
+                        DisplayBoard();
+                    }
+                }
+            }
+        }
     }
 
     private void HandleMovement1()
@@ -617,7 +648,7 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
         }
         if(_FireBallAttackMode)        
         {
-            HandleAttackFireball();
+            HandleAttackFireball(@event);
             _FireBallAttackMode = false;
         }
         if(_MovimentMode)
@@ -714,14 +745,42 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
         _MeleaAttackMode = false;
         _RangedAttackMode = false;
         _MovimentMode = false;
-        // Entrar en modo ataque de bola de fuego: mostrar área de efecto (ejemplo: 3x3 alrededor del jugador)
+        // Entrar en modo ataque de bola de fuego: mostrar área de efecto (alcance global)
         if (!IsPlayerValid()) return;
 
-        // Aquí podrías calcular las casillas dentro de un área de efecto y mostrarlas con puntos
-        // Luego, al hacer clic, ejecutar la lógica para eliminar piezas dentro de esa área
-        
+        // Mostrar todos los tiles del tablero como posibles objetivos (excepto la casilla del jugador)
+        moves = new List<Vector2>();
+        for (int r = 0; r < BOARD_SIZE; r++)
+        {
+            for (int c = 0; c < BOARD_SIZE; c++)
+            {
+                if (c == (int)_playerPosition.X && r == (int)_playerPosition.Y) continue;
+                moves.Add(new Vector2(c, r));
+            }
+        }
 
-        _FireBallAttackMode = true;
+        if (moves != null && moves.Count > 0)
+        {
+            _FireBallAttackMode = true;
+            show_dots();
+        }
+    }
+
+    public void ExecuteFireballAttack(int targetCol, int targetRow)
+    {
+        // Elimina enemigos en un área 3x3 alrededor del objetivo
+        for (int y = targetRow - 1; y <= targetRow + 1; y++)
+        {
+            for (int x = targetCol - 1; x <= targetCol + 1; x++)
+            {
+                if (!_piecesMovement.isValidPosition(new Vector2(x, y))) continue;
+                if (_board[y, x] > 0 && _board[y, x] <= 6)
+                {
+                    _board[y, x] = 0;
+                }
+            }
+        }
+        _piecesMovement.setBoard(_board);
     }
 
 
