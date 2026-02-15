@@ -36,14 +36,18 @@ public partial class Board : Node2D
     private List<Vector2> _randomCandidates = new List<Vector2>();
     private int _pendingMoveSelections = 0;
     private bool _MoveSelectionMode = false;
-    // patrón de movimiento elegido aleatoriamente (1..6 -> peon, caballo, alfil, torre, reina, rey)
-    private int _currentRandomPattern = -1;
+    // patrones de movimiento elegidos aleatoriamente (1..6 -> peon, caballo, alfil, torre, reina, rey)
+    private int _move1Pattern = -1; // patrón para Move 1
+    private int _move2Pattern = -1; // patrón para Move 2
+    private int _currentRandomPattern = -1; // patrón actualmente en uso
 
-    private int _energia = 5;
+    private int _energia = 6;
     [Export]
     private Node2D _pieces;
     [Export]
     private Node2D _dots;
+    [Export]
+    private Node2D _areaPreview; // Nodo para mostrar el preview del área de ataque
     private Sprite2D _turn;
     private Label _energyCountLabel;
     public override void _Ready()
@@ -53,6 +57,7 @@ public partial class Board : Node2D
         _playerPosition = new Vector2(4, 3);
         _pieces = GetNode<Node2D>("Pieces");
         _dots = GetNode<Node2D>("Dots");
+        _areaPreview = GetNode<Node2D>("AreaPreview");
         _piecesMovement = new PiecesMovement();
         _card = new CardUI();
         _energyCountLabel = GetNode<Label>("Energia");
@@ -418,15 +423,142 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
             child.QueueFree();
     }
 
+    // limpia el preview del área de ataque
+    private void ClearAreaPreview()
+    {
+        if (_areaPreview == null) return;
+        var children = _areaPreview.GetChildren();
+        foreach (Node child in children)
+            child.QueueFree();
+    }
+
+    // actualiza el preview del área de ataque según la posición del mouse
+    private void UpdateAreaPreview()
+    {
+        ClearAreaPreview();
+        if (_areaPreview == null) return;
+
+        // Obtener la celda sobre la que está el mouse
+        Vector2 local = _pieces.ToLocal(GetGlobalMousePosition());
+        int mouseCol = (int)(local.X / CELL_WIDTH);
+        int mouseRow = (int)(local.Y / CELL_WIDTH);
+
+        // Validar que el mouse esté dentro del tablero
+        if (mouseCol < 0 || mouseCol >= BOARD_SIZE || mouseRow < 0 || mouseRow >= BOARD_SIZE)
+            return;
+
+        List<Vector2> affectedCells = new List<Vector2>();
+
+        if (_MeleaAttackMode)
+        {
+            // Preview para ataque melee: 3x1 en la dirección del click
+            int px = (int)_playerPosition.X;
+            int py = (int)_playerPosition.Y;
+            
+            int dx = Math.Sign(mouseCol - px);
+            int dy = Math.Sign(mouseRow - py);
+
+            // Si está en diagonal, no mostrar preview (melee solo funciona en cardinales)
+            if (dx != 0 && dy != 0) return;
+            if (dx == 0 && dy == 0) return;
+
+            // Celda principal en la dirección del click
+            int targetX = px + dx;
+            int targetY = py + dy;
+            
+            if (targetX >= 0 && targetX < BOARD_SIZE && targetY >= 0 && targetY < BOARD_SIZE)
+            {
+                affectedCells.Add(new Vector2(targetX, targetY));
+
+                // Celdas perpendiculares
+                if (dy != 0) // Si ataca verticalmente, mostrar horizontales
+                {
+                    if (targetX + 1 < BOARD_SIZE)
+                        affectedCells.Add(new Vector2(targetX + 1, targetY));
+                    if (targetX - 1 >= 0)
+                        affectedCells.Add(new Vector2(targetX - 1, targetY));
+                }
+                else // Si ataca horizontalmente, mostrar verticales
+                {
+                    if (targetY + 1 < BOARD_SIZE)
+                        affectedCells.Add(new Vector2(targetX, targetY + 1));
+                    if (targetY - 1 >= 0)
+                        affectedCells.Add(new Vector2(targetX, targetY - 1));
+                }
+            }
+        }
+        else if (_RangedAttackMode)
+        {
+            // Preview para arco: línea recta en una de las 8 direcciones hasta 4 casillas
+            int px = (int)_playerPosition.X;
+            int py = (int)_playerPosition.Y;
+            
+            int dx = mouseCol - px;
+            int dy = mouseRow - py;
+            
+            // Normalizar la dirección
+            int dirX = Math.Sign(dx);
+            int dirY = Math.Sign(dy);
+
+            if (dirX == 0 && dirY == 0) return;
+
+            // Mostrar hasta 4 casillas en esa dirección
+            for (int i = 1; i < 5; i++)
+            {
+                int targetX = px + dirX * i;
+                int targetY = py + dirY * i;
+                
+                if (targetX >= 0 && targetX < BOARD_SIZE && targetY >= 0 && targetY < BOARD_SIZE)
+                {
+                    affectedCells.Add(new Vector2(targetX, targetY));
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        else if (_FireBallAttackMode)
+        {
+            // Preview para fireball: 3x3 centrado en la celda del mouse
+            for (int y = mouseRow - 1; y <= mouseRow + 1; y++)
+            {
+                for (int x = mouseCol - 1; x <= mouseCol + 1; x++)
+                {
+                    if (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE)
+                    {
+                        affectedCells.Add(new Vector2(x, y));
+                    }
+                }
+            }
+        }
+
+        // Dibujar las celdas afectadas con un color semitransparente
+        foreach (Vector2 cell in affectedCells)
+        {
+            ColorRect preview = new ColorRect();
+            preview.Size = new Vector2(CELL_WIDTH, CELL_WIDTH);
+            preview.Position = new Vector2(cell.X * CELL_WIDTH, cell.Y * CELL_WIDTH);
+            preview.Color = new Color(1, 0, 0, 0.3f); // Rojo semitransparente
+            preview.ZIndex = 5; // Encima de las piezas
+            _areaPreview.AddChild(preview);
+        }
+    }
+
     public void _on_button_pressed(){
         _piecesMovement.setPlayerPosition(_playerPosition);
         enemies_movement();
         newTurn();
+        SpawnEnemyPiece();
         DisplayBoard();
         _turns++;
-        SpawnEnemyPiece();
-        _energia = 5;
+        _energia = 6;
         _energyCountLabel.Text = "Energia: " + _energia.ToString();
+        
+        // IMPORTANTE: Resetear ambos patrones de movimiento al pasar turno
+        _move1Pattern = -1;
+        _move2Pattern = -1;
+        _currentRandomPattern = -1;
     }
 
 
@@ -437,12 +569,12 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
             HandleAttackMele(@event);
             // El flag se resetea dentro de HandleAttackMele cuando se completa la acción
         }
-        if(_RangedAttackMode && _energia != 0 && (_energia -1) >= 0)
+        if(_RangedAttackMode && _energia != 0 && (_energia -2) >= 0)
         {
             HandleAttackRange(@event);
             // El flag se resetea dentro de HandleAttackRange cuando se completa la acción
         }
-        if(_FireBallAttackMode && _energia != 0 && (_energia -2) >= 0)        
+        if(_FireBallAttackMode && _energia != 0 && (_energia -3) >= 0)        
         {
             HandleAttackFireball(@event);
         }
@@ -470,7 +602,15 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
 
         public override void _Process(double delta)
     {
-
+        // Actualizar preview del área de ataque basándose en la posición del mouse
+        if (_MeleaAttackMode || _RangedAttackMode || _FireBallAttackMode)
+        {
+            UpdateAreaPreview();
+        }
+        else
+        {
+            ClearAreaPreview();
+        }
     }
     public bool is_mouse_out()
     {
@@ -550,6 +690,7 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
 
                         // limpiar estado de selección y puntos
                         ClearDots();
+                        ClearAreaPreview();
                         moves = null;
                         _MeleaAttackMode = false;
                         // refrescar vista
@@ -610,23 +751,32 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
 
     private void HandleAttackRangeShow()
     {
-        // Mostrar opciones de ataque en diagonales
+        // Mostrar opciones de ataque en las 8 direcciones
         moves = new List<Vector2>();
         int px = (int)_playerPosition.X;
         int py = (int)_playerPosition.Y;
         
-        // Solo diagonales
+        // Las 8 direcciones: cardinales + diagonales
         List<Vector2> directions = new List<Vector2>
         {
-            new Vector2(1, 1), new Vector2(1, -1), new Vector2(-1, 1), new Vector2(-1, -1)
+            // Cardinales
+            new Vector2(0, -1),  // Arriba
+            new Vector2(1, 0),   // Derecha
+            new Vector2(0, 1),   // Abajo
+            new Vector2(-1, 0),  // Izquierda
+            // Diagonales
+            new Vector2(1, -1),  // Arriba-Derecha
+            new Vector2(1, 1),   // Abajo-Derecha
+            new Vector2(-1, 1),  // Abajo-Izquierda
+            new Vector2(-1, -1)  // Arriba-Izquierda
         };
 
         foreach (var d in directions)
         {
             for (int i = 1; i < 5; i++)
             {
-                int tx = px + (int)d.X;
-                int ty = py + (int)d.Y;
+                int tx = px + (int)d.X * i;
+                int ty = py + (int)d.Y * i;
                 if (tx >= 0 && tx < BOARD_SIZE && ty >= 0 && ty < BOARD_SIZE)
                 {
                     moves.Add(new Vector2(tx, ty));
@@ -646,7 +796,7 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
 
     private void HandleAttackRange(InputEvent @event)
     {
-        // Maneja el clic para ataque en diagonales
+        // Maneja el clic para ataque en las 8 direcciones
         if (@event is InputEventMouseButton mb && mb.IsPressed() && mb.ButtonIndex == MouseButton.Left)
         {
             if (moves != null && moves.Count > 0)
@@ -661,21 +811,26 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
                     Vector2 target = new Vector2(col, row);
                     if (moves.Contains(target))
                     {
-                        // dirección relativa normalizada -1/0/1
+                        // Calcular dirección normalizada hacia el objetivo
                         int px = (int)_playerPosition.X;
                         int py = (int)_playerPosition.Y;
-                        int dx = Math.Sign(col - px);
-                        int dy = Math.Sign(row - py);
-                        Vector2 dir = new Vector2(dx, dy);
+                        int dx = col - px;
+                        int dy = row - py;
+                        
+                        // Normalizar la dirección (-1, 0, o 1)
+                        int dirX = Math.Sign(dx);
+                        int dirY = Math.Sign(dy);
+                        Vector2 dir = new Vector2(dirX, dirY);
 
                         // reproducir animación de ataque con rotación en el jugador
                         if (IsPlayerValid())
                             _playerInstance.PlayRangedAttack(dir);
 
-                        ExecuteRangeAttack(px, py, dx, dy);
+                        ExecuteRangeAttack(px, py, dirX, dirY);
 
                         // limpiar estado de selección y puntos
                         ClearDots();
+                        ClearAreaPreview();
                         moves = null;
                         _RangedAttackMode = false;
                         // refrescar vista
@@ -703,7 +858,7 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
             }
         }
         _piecesMovement.setBoard(_board);
-        _energia--;
+        _energia -= 2; // Cuesta 2 energía
         _energyCountLabel.Text = "Energia: " + _energia.ToString();
     }
 
@@ -759,6 +914,7 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
                         ExecuteFireballAttack(col, row);
 
                         ClearDots();
+                        ClearAreaPreview();
                         moves = null;
                         _FireBallAttackMode = false;
                         DisplayBoard();
@@ -782,7 +938,7 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
             }
         }
         _piecesMovement.setBoard(_board);
-        _energia-=2; // la bola de fuego consume más energía
+        _energia -= 3; // Cuesta 3 energía
         _energyCountLabel.Text = "Energia: " + _energia.ToString();
     }
 
@@ -792,8 +948,8 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
         _RangedAttackMode = false;
         _FireBallAttackMode = false;
         _MovimentMode = false;
-        // Iniciar selección de 1 movimiento: el randomizador propone opciones y el jugador elige
-        StartMoveSelection(1);
+        // Iniciar selección de 1 movimiento con el patrón de Move 1
+        StartMoveSelection(1, true); // true indica que es Move 1
     }
        public void _on_move_2_pressed()
     {
@@ -801,8 +957,8 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
         _RangedAttackMode = false;
         _FireBallAttackMode = false;
         _MovimentMode = false;
-        // Iniciar selección de 2 movimientos secuenciales
-        StartMoveSelection(2);
+        // Iniciar selección de 2 movimientos con el patrón de Move 2
+        StartMoveSelection(2, false); // false indica que es Move 2
     }
 
     private void MoveRandomSteps(int steps)
@@ -820,13 +976,55 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
     }
 
     // Inicia el flujo de selección: genera candidatos aleatorios y muestra puntos
-    private void StartMoveSelection(int selections)
+    private void StartMoveSelection(int selections, bool isMove1)
     {
         if (!IsPlayerValid()) return;
         _pendingMoveSelections = selections;
         _MoveSelectionMode = true;
-        // elegir patrón y mostrar TODOS los movimientos válidos de ese patrón
-        _currentRandomPattern = random.Next(1, 7);
+        
+        if (isMove1)
+        {
+            // Move 1: usar o generar patrón de Move 1
+            if (_move1Pattern == -1)
+            {
+                _move1Pattern = random.Next(1, 7);
+                
+                // Si Move 2 ya tiene un patrón, asegurarse de que Move 1 sea diferente
+                if (_move2Pattern != -1)
+                {
+                    while (_move1Pattern == _move2Pattern)
+                    {
+                        _move1Pattern = random.Next(1, 7);
+                    }
+                }
+            }
+            _currentRandomPattern = _move1Pattern;
+        }
+        else
+        {
+            // Move 2: usar o generar patrón de Move 2
+            if (_move2Pattern == -1)
+            {
+                _move2Pattern = random.Next(1, 7);
+                
+                // Si Move 1 ya tiene un patrón, asegurarse de que Move 2 sea diferente
+                if (_move1Pattern != -1)
+                {
+                    while (_move2Pattern == _move1Pattern)
+                    {
+                        _move2Pattern = random.Next(1, 7);
+                    }
+                }
+            }
+            _currentRandomPattern = _move2Pattern;
+        }
+        
+        ShowMovesForCurrentPattern();
+    }
+
+    // Método auxiliar para mostrar los movimientos del patrón actual
+    private void ShowMovesForCurrentPattern()
+    {
         var all = GetMovesForPattern(_currentRandomPattern);
         moves = new List<Vector2>(all);
         if (moves != null && moves.Count > 0)
@@ -912,25 +1110,16 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
 
                 if (_pendingMoveSelections > 0)
                 {
-                    // generar nuevo patrón aleatorio y mostrar TODOS sus movimientos válidos
-                    _currentRandomPattern = random.Next(1, 7);
-                    var all = GetMovesForPattern(_currentRandomPattern);
-                    moves = new List<Vector2>(all);
-                    if (moves != null && moves.Count > 0)
-                        show_dots();
-                    else
-                    {
-                        // no hay más movimientos posibles
-                        _MoveSelectionMode = false;
-                        _pendingMoveSelections = 0;
-                    }
+                    // MANTENER el mismo patrón, solo actualizar las casillas disponibles
+                    ShowMovesForCurrentPattern();
                 }
                 else
                 {
-                    // acabado
+                    // acabado: resetear todo
                     _MoveSelectionMode = false;
                     _pendingMoveSelections = 0;
                     _randomCandidates.Clear();
+                    // NO resetear el patrón aquí - se resetea en _on_button_pressed al pasar turno
                 }
 
                 DisplayBoard();

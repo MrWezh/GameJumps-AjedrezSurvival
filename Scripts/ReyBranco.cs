@@ -1,4 +1,3 @@
-// ...existing code...
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -63,21 +62,60 @@ public partial class ReyBranco : CharacterBody2D
 
         // mapear a ángulo en grados (0 = arriba)
         float angleDeg = 0f;
-        if (dx == -1 && dy == -1)      angleDeg = -45f;    // arriba izquierda (diagonal)
-        else if (dx == 1 && dy == -1) angleDeg = 45f;   // arriba derecha (diagonal)
-        else if (dx == 1 && dy == 1)  angleDeg = 135f;   // abajo derecha (diagonal)
-        else if (dx == -1 && dy == 1) angleDeg = -135f;  // abajo izquierda (diagonal)
+        
+        // Direcciones cardinales (arriba, derecha, abajo, izquierda)
+        if (dx == 0 && dy == -1)      angleDeg = 0f;      // arriba
+        else if (dx == 1 && dy == 0)  angleDeg = 90f;     // derecha
+        else if (dx == 0 && dy == 1)  angleDeg = 180f;    // abajo
+        else if (dx == -1 && dy == 0) angleDeg = -90f;    // izquierda (o 270f)
+        
+        // Direcciones diagonales
+        else if (dx == 1 && dy == -1)  angleDeg = 45f;    // arriba-derecha
+        else if (dx == 1 && dy == 1)   angleDeg = 135f;   // abajo-derecha
+        else if (dx == -1 && dy == 1)  angleDeg = -135f;  // abajo-izquierda (o 225f)
+        else if (dx == -1 && dy == -1) angleDeg = -45f;   // arriba-izquierda (o 315f)
         else
-            angleDeg = 0f; // fallback para diagonales u otros casos
+            angleDeg = 0f; // fallback
 
         // aplicar rotación al sprite/elemento de "Habilidades"
         animatedSprite.RotationDegrees = angleDeg;
-        // reproducir animación de ataque (asumiendo que se llama "Attack")
+        // reproducir animación de ataque (asumiendo que se llama "shoot")
         setAnimation("shoot");
     }
 
     public void PlayFireball(Vector2 targetLocal, double duration = 0.5)
     {
+        // Calcular la dirección hacia el objetivo
+        Vector2 direction = (targetLocal - this.Position).Normalized();
+        int dx = Math.Sign(direction.X);
+        int dy = Math.Sign(direction.Y);
+        
+        // Calcular el ángulo de rotación hacia el objetivo
+        float angleDeg = 0f;
+        
+        // Direcciones cardinales
+        if (dx == 0 && dy == -1)      angleDeg = 0f;      // arriba
+        else if (dx == 1 && dy == 0)  angleDeg = 90f;     // derecha
+        else if (dx == 0 && dy == 1)  angleDeg = 180f;    // abajo
+        else if (dx == -1 && dy == 0) angleDeg = -90f;    // izquierda
+        
+        // Direcciones diagonales
+        else if (dx == 1 && dy == -1)  angleDeg = 45f;    // arriba-derecha
+        else if (dx == 1 && dy == 1)   angleDeg = 135f;   // abajo-derecha
+        else if (dx == -1 && dy == 1)  angleDeg = -135f;  // abajo-izquierda
+        else if (dx == -1 && dy == -1) angleDeg = -45f;   // arriba-izquierda
+        else
+            angleDeg = 0f; // fallback
+
+        // Rotar el sprite del jugador hacia el objetivo
+        if (animatedSprite != null)
+        {
+            animatedSprite.RotationDegrees = angleDeg - 90f; // Ajuste de rotación para que la bola apunte hacia adelante
+        }
+
+        // reproducir animación de lanzamiento si existe
+        setAnimation("fireBall");
+
         // Crea un sprite temporal (bola de fuego) y lo mueve desde la posición actual hasta targetLocal
         if (GetParent() == null) return;
 
@@ -91,6 +129,7 @@ public partial class ReyBranco : CharacterBody2D
         fire.Texture = tex;
         // usar la posición local del rey (ya en coordenadas del padre)
         fire.Position = this.Position;
+        
         GetParent().AddChild(fire);
 
         var tween = CreateTween();
@@ -98,8 +137,5 @@ public partial class ReyBranco : CharacterBody2D
             .SetTrans(Tween.TransitionType.Quad)
             .SetEase(Tween.EaseType.Out);
         tween.TweenCallback(Callable.From(() => { if (IsInstanceValid(fire)) fire.QueueFree(); }));
-
-        // reproducir animación de lanzamiento si existe
-        setAnimation("fireBall");
     }
 }
