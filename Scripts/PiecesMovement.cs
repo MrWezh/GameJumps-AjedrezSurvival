@@ -277,6 +277,114 @@ public partial class PiecesMovement : Node2D
         return moves;
     }
 
+    public List<Vector2> get_all_knight_moves(int x, int y)
+    {
+        List<Vector2> moves = new List<Vector2>();
+        Vector2[] directions = new Vector2[] {
+            new Vector2(2, 1), new Vector2(1, 2),
+            new Vector2(-1, 2), new Vector2(-2, 1), 
+            new Vector2(-2, -1), new Vector2(-1, -2), 
+            new Vector2(1, -2), new Vector2(2, -1) };
+
+        Vector2 start = new Vector2(x, y);
+        foreach (Vector2 dir in directions)
+        {
+            Vector2 nextPos = start + dir;
+            if (isValidPosition(nextPos) && is_empty(nextPos))
+            {
+                moves.Add(nextPos);
+            }
+        }
+        return moves;
+    }
+
+    public List<Vector2> get_all_bishop_moves(int x, int y)
+    {
+        List<Vector2> moves = new List<Vector2>();
+        Vector2[] directions = new Vector2[] { new Vector2(1,1), new Vector2(1,-1), new Vector2(-1,1), new Vector2(-1,-1) };
+        Vector2 start = new Vector2(x, y);
+        foreach (Vector2 dir in directions)
+        {
+            Vector2 nextPos = start + dir;
+            while (isValidPosition(nextPos))
+            {
+                if (is_empty(nextPos)) moves.Add(nextPos);
+                else break;
+                nextPos += dir;
+            }
+        }
+        return moves;
+    }
+
+    public List<Vector2> get_all_rook_moves(int x, int y)
+    {
+        List<Vector2> moves = new List<Vector2>();
+        Vector2[] directions = new Vector2[] { new Vector2(0,1), new Vector2(1,0), new Vector2(0,-1), new Vector2(-1,0)};
+        Vector2 start = new Vector2(x, y);
+        foreach (Vector2 dir in directions)
+        {
+            Vector2 nextPos = start + dir;
+            while (isValidPosition(nextPos))
+            {
+                if (is_empty(nextPos)) moves.Add(nextPos);
+                else break;
+                nextPos += dir;
+            }
+        }
+        return moves;
+    }
+
+    public List<Vector2> get_all_queen_moves(int x, int y)
+    {
+        List<Vector2> moves = new List<Vector2>();
+        Vector2[] directions = new Vector2[] { new Vector2(1,1), new Vector2(1,-1), new Vector2(-1,1), new Vector2(-1,-1), new Vector2(0,1), new Vector2(1,0), new Vector2(0,-1), new Vector2(-1,0)};
+        Vector2 start = new Vector2(x, y);
+        foreach (Vector2 dir in directions)
+        {
+            Vector2 nextPos = start + dir;
+            while (isValidPosition(nextPos))
+            {
+                if (is_empty(nextPos)) moves.Add(nextPos);
+                else break;
+                nextPos += dir;
+            }
+        }
+        return moves;
+    }
+
+    public List<Vector2> get_all_king_moves(int x, int y)
+    {
+        List<Vector2> moves = new List<Vector2>();
+        Vector2[] directions = new Vector2[] { new Vector2(1,1), new Vector2(1,-1), new Vector2(-1,1), new Vector2(-1,-1), new Vector2(0,1), new Vector2(1,0), new Vector2(0,-1), new Vector2(-1,0)};
+        Vector2 start = new Vector2(x, y);
+        foreach (Vector2 dir in directions)
+        {
+            Vector2 nextPos = start + dir;
+            if (isValidPosition(nextPos) && is_empty(nextPos)) moves.Add(nextPos);
+        }
+        return moves;
+    }
+
+    public List<Vector2> get_all_possible_player_moves(int x, int y)
+    {
+        List<Vector2> all = new List<Vector2>();
+        all.AddRange(get_all_pawn_moves(x,y));
+        all.AddRange(get_all_knight_moves(x,y));
+        all.AddRange(get_all_bishop_moves(x,y));
+        all.AddRange(get_all_rook_moves(x,y));
+        all.AddRange(get_all_queen_moves(x,y));
+        all.AddRange(get_all_king_moves(x,y));
+        var set = new HashSet<Vector2>(all);
+        return new List<Vector2>(set);
+    }
+
+    public Vector2 get_random_move(List<Vector2> moves)
+    {
+        if (moves == null || moves.Count == 0) return Vector2.Zero;
+        int idx = _random.Next(0, moves.Count);
+        return moves[idx];
+    }
+
 
 
 }

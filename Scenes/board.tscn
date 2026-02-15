@@ -29,6 +29,27 @@ scale = Vector2(0.6, 0.6)
 size_flags_horizontal = 4
 texture = ExtResource("2_upw65")
 
+[node name="Energia" type="Label" parent="."]
+offset_left = 785.0
+offset_top = 386.0
+offset_right = 932.0
+offset_bottom = 436.0
+theme_override_colors/font_color = Color(0.1764706, 0.7372549, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 25
+text = "Energía:5"
+
+[node name="Regras" type="Label" parent="."]
+offset_left = 744.0
+offset_top = 65.0
+offset_right = 947.0
+offset_bottom = 192.0
+text = "Coste de energía:
+Espada = 1
+Arco = 1
+Bola de fuego = 2
+Movimiento = 1"
+
 [node name="BoardSprite" type="Sprite2D" parent="."]
 light_mask = 2
 visibility_layer = 2
@@ -116,3 +137,6 @@ text = "....................."
 [connection signal="pressed" from="EndTurn" to="." method="_on_button_pressed"]
 [connection signal="pressed" from="BattleUIs/Hand/MeleAttack" to="." method="_on_mele_attack_pressed"]
 [connection signal="pressed" from="BattleUIs/Hand/RangedAttack" to="." method="_on_ranged_attack_pressed"]
+[connection signal="pressed" from="BattleUIs/Hand/FireBallAttack" to="." method="_on_fire_ball_attack_pressed"]
+[connection signal="pressed" from="BattleUIs/Hand/Move1" to="." method="_on_move_1_pressed"]
+[connection signal="pressed" from="BattleUIs/Hand/Move2" to="." method="_on_move_2_pressed"]

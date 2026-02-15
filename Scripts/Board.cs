@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using Godot.Bridge;
 
 
 public partial class Board : Node2D
@@ -31,15 +32,20 @@ public partial class Board : Node2D
     private bool _RangedAttackMode = false;
     private bool _FireBallAttackMode = false;
     private bool _MovimentMode = false;
+    // selección de movimientos aleatorios
+    private List<Vector2> _randomCandidates = new List<Vector2>();
+    private int _pendingMoveSelections = 0;
+    private bool _MoveSelectionMode = false;
+    // patrón de movimiento elegido aleatoriamente (1..6 -> peon, caballo, alfil, torre, reina, rey)
+    private int _currentRandomPattern = -1;
 
+    private int _energia = 5;
     [Export]
     private Node2D _pieces;
     [Export]
     private Node2D _dots;
-
     private Sprite2D _turn;
-
-
+    private Label _energyCountLabel;
     public override void _Ready()
     {
         _piecesTexture = new Pieces();
@@ -49,6 +55,7 @@ public partial class Board : Node2D
         _dots = GetNode<Node2D>("Dots");
         _piecesMovement = new PiecesMovement();
         _card = new CardUI();
+        _energyCountLabel = GetNode<Label>("Energia");
 
         _enemyScenes[1] = _enemies._peon;
         _enemyScenes[2] = _enemies._caballo;
@@ -172,219 +179,6 @@ public partial class Board : Node2D
         }
 
         return casillasDisponibles;
-    }
-
-
-    private void HandleAttackMele(InputEvent @event)
-    {
-        if (@event is InputEventMouseButton mb && mb.IsPressed() && mb.ButtonIndex == MouseButton.Left)
-        {
-            // si estamos en modo ataque, capturar click en una de las casillas resaltadas
-            if (moves != null && moves.Count > 0)
-            {
-                Vector2 local = _pieces.ToLocal(GetGlobalMousePosition());
-                int col = (int)(local.X / CELL_WIDTH);
-                int row = (int)(local.Y / CELL_WIDTH);
-
-                // validar rango
-                if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE)
-                {
-                    Vector2 target = new Vector2(col, row);
-                    if (moves.Contains(target))
-                    {
-                        // dirección relativa normalizada -1/0/1
-                        int px = (int)_playerPosition.X;
-                        int py = (int)_playerPosition.Y;
-                        int dx = Math.Sign(col - px);
-                        int dy = Math.Sign(row - py);
-                        Vector2 dir = new Vector2(dx, dy);
-
-                        // reproducir animación de ataque en el jugador
-                        if (IsPlayerValid())
-                            _playerInstance.PlayMeleAttack(dir);
-                        ExecuteMeleAttack(px, py, dx, dy);
-
-                        // limpiar estado de selección y puntos
-                        ClearDots();
-                        moves = null;
-                        _MeleaAttackMode = false;
-                        // refrescar vista
-                        DisplayBoard();
-                    }
-                }
-            }
-        }
-    }
-
-    private void ExecuteMeleAttack(int startX, int startY, int dirX, int dirY)
-    {
-        
-        int targetX = startX + dirX;
-        int targetY = startY + dirY;
-
-        
-        if(!_piecesMovement.isValidPosition(new Vector2(targetX, targetY)))
-         return;
-        _board[targetY, targetX] = 0; // eliminar pieza enemiga (si existe)
-         
-        if(dirY != 0)
-        {
-            if(targetX + 1 < BOARD_SIZE)
-            _board[targetY, targetX+1] = 0;
-            if(targetX - 1 >= 0)
-            _board[targetY, targetX-1] = 0;
-        }
-        else
-        {
-            if(targetY + 1 < BOARD_SIZE)
-            _board[targetY+1, targetX] = 0;
-            if(targetY - 1 >= 0)
-            _board[targetY-1, targetX] = 0;
-        }
-        _piecesMovement.setBoard(_board);
-    }
-
-    private void HandleAttackRangeShow()
-    {
-        // Mostrar opciones de ataque en diagonales
-        moves = new List<Vector2>();
-        int px = (int)_playerPosition.X;
-        int py = (int)_playerPosition.Y;
-        
-        // Solo diagonales
-        List<Vector2> directions = new List<Vector2>
-        {
-            new Vector2(1, 1), new Vector2(1, -1), new Vector2(-1, 1), new Vector2(-1, -1)
-        };
-
-        foreach (var d in directions)
-        {
-            for (int i = 1; i < 5; i++)
-            {
-                int tx = px + (int)d.X;
-                int ty = py + (int)d.Y;
-                if (tx >= 0 && tx < BOARD_SIZE && ty >= 0 && ty < BOARD_SIZE)
-                {
-                    moves.Add(new Vector2(tx, ty));
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-
-        if (moves.Count > 0)
-        {
-            show_dots();
-        }
-    }
-
-    private void HandleAttackRange(InputEvent @event)
-    {
-        // Maneja el clic para ataque en diagonales
-        if (@event is InputEventMouseButton mb && mb.IsPressed() && mb.ButtonIndex == MouseButton.Left)
-        {
-            if (moves != null && moves.Count > 0)
-            {
-                Vector2 local = _pieces.ToLocal(GetGlobalMousePosition());
-                int col = (int)(local.X / CELL_WIDTH);
-                int row = (int)(local.Y / CELL_WIDTH);
-
-                // validar rango
-                if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE)
-                {
-                    Vector2 target = new Vector2(col, row);
-                    if (moves.Contains(target))
-                    {
-                        // dirección relativa normalizada -1/0/1
-                        int px = (int)_playerPosition.X;
-                        int py = (int)_playerPosition.Y;
-                        int dx = Math.Sign(col - px);
-                        int dy = Math.Sign(row - py);
-                        Vector2 dir = new Vector2(dx, dy);
-
-                        // reproducir animación de ataque con rotación en el jugador
-                        if (IsPlayerValid())
-                            _playerInstance.PlayRangedAttack(dir);
-
-                        ExecuteRangeAttack(px, py, dx, dy);
-
-                        // limpiar estado de selección y puntos
-                        ClearDots();
-                        moves = null;
-                        _RangedAttackMode = false;
-                        // refrescar vista
-                        DisplayBoard();
-                    }
-                }
-            }
-        }
-    }
-
-    public void ExecuteRangeAttack(int startX, int startY, int dirX, int dirY)
-    {
-        // Lógica para eliminar piezas en la dirección dada (puede ser más compleja según alcance, obstáculos, etc.)
-        for (int i = 1; i < 5; i++)
-        {
-            int targetX = startX + dirX * i;
-            int targetY = startY + dirY * i;
-
-            if (!_piecesMovement.isValidPosition(new Vector2(targetX, targetY)))
-                break;
-
-            if (_board[targetY, targetX] > 0 && _board[targetY, targetX] <= 6)
-            {
-                _board[targetY, targetX] = 0; // eliminar piezas enemigas
-            }
-        }
-        _piecesMovement.setBoard(_board);
-    }
-
-    private void HandleAttackFireball(InputEvent @event)
-    {
-        if (@event is InputEventMouseButton mb && mb.IsPressed() && mb.ButtonIndex == MouseButton.Left)
-        {
-            if (moves != null && moves.Count > 0)
-            {
-                Vector2 local = _pieces.ToLocal(GetGlobalMousePosition());
-                int col = (int)(local.X / CELL_WIDTH);
-                int row = (int)(local.Y / CELL_WIDTH);
-
-                if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE)
-                {
-                    Vector2 target = new Vector2(col, row);
-                    if (moves.Contains(target))
-                    {
-                        // Dirección relativa para orientar animación
-                        int px = (int)_playerPosition.X;
-                        int py = (int)_playerPosition.Y;
-                        int dx = Math.Sign(col - px);
-                        int dy = Math.Sign(row - py);
-
-                        if (IsPlayerValid())
-                            _playerInstance.PlayRangedAttack(new Vector2(dx, dy));
-
-                        ExecuteFireballAttack(col, row);
-
-                        ClearDots();
-                        moves = null;
-                        _FireBallAttackMode = false;
-                        DisplayBoard();
-                    }
-                }
-            }
-        }
-    }
-
-    private void HandleMovement1()
-    {
-       
-    }
-
-    private void HandleMovement2()
-    {
-    
     }
 
     private void ExecutePlayerMovement(Vector2 newPosition)
@@ -582,9 +376,9 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
                             break;
                     }
                     
-                   // if(_board[(int)enemyMoves.Y, (int)enemyMoves.X] == -1){
-                      ///  gameOver();
-                    //}
+                   if(_board[(int)enemyMoves.Y, (int)enemyMoves.X] == -1){
+                        gameOver();
+                    }
 
                     _board[row, col] = 0;
                     _board[(int)enemyMoves.Y, (int)enemyMoves.X] = piece+10;
@@ -631,30 +425,31 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
         DisplayBoard();
         _turns++;
         SpawnEnemyPiece();
+        _energia = 5;
+        _energyCountLabel.Text = "Energia: " + _energia.ToString();
     }
 
 
     public override void _Input(InputEvent @event)
     {
-        if(_MeleaAttackMode)
+        if(_MeleaAttackMode && _energia != 0 && (_energia -1) >= 0)
         {
             HandleAttackMele(@event);
             // El flag se resetea dentro de HandleAttackMele cuando se completa la acción
         }
-        if(_RangedAttackMode)
+        if(_RangedAttackMode && _energia != 0 && (_energia -1) >= 0)
         {
             HandleAttackRange(@event);
             // El flag se resetea dentro de HandleAttackRange cuando se completa la acción
         }
-        if(_FireBallAttackMode)        
+        if(_FireBallAttackMode && _energia != 0 && (_energia -2) >= 0)        
         {
             HandleAttackFireball(@event);
-            _FireBallAttackMode = false;
         }
-        if(_MovimentMode)
+        if (_MoveSelectionMode && _energia != 0 && (_energia -1) >= 0)
         {
-            HandleMovement1();
-            _MovimentMode = false;
+            HandleMoveSelection(@event);
+            return; // Priorizar selección sobre otras entradas
         }
     }
 
@@ -723,6 +518,77 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
 
         
     }
+    
+    private void HandleAttackMele(InputEvent @event)
+    {
+        if (@event is InputEventMouseButton mb && mb.IsPressed() && mb.ButtonIndex == MouseButton.Left)
+        {
+            // si estamos en modo ataque, capturar click en una de las casillas resaltadas
+            if (moves != null && moves.Count > 0)
+            {
+                Vector2 local = _pieces.ToLocal(GetGlobalMousePosition());
+                int col = (int)(local.X / CELL_WIDTH);
+                int row = (int)(local.Y / CELL_WIDTH);
+
+                // validar rango
+                if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE)
+                {
+                    Vector2 target = new Vector2(col, row);
+                    if (moves.Contains(target))
+                    {
+                        // dirección relativa normalizada -1/0/1
+                        int px = (int)_playerPosition.X;
+                        int py = (int)_playerPosition.Y;
+                        int dx = Math.Sign(col - px);
+                        int dy = Math.Sign(row - py);
+                        Vector2 dir = new Vector2(dx, dy);
+
+                        // reproducir animación de ataque en el jugador
+                        if (IsPlayerValid())
+                            _playerInstance.PlayMeleAttack(dir);
+                        ExecuteMeleAttack(px, py, dx, dy);
+
+                        // limpiar estado de selección y puntos
+                        ClearDots();
+                        moves = null;
+                        _MeleaAttackMode = false;
+                        // refrescar vista
+                        DisplayBoard();
+                    }
+                }
+            }
+        }
+    }
+
+    private void ExecuteMeleAttack(int startX, int startY, int dirX, int dirY)
+    {
+        
+        int targetX = startX + dirX;
+        int targetY = startY + dirY;
+
+        
+        if(!_piecesMovement.isValidPosition(new Vector2(targetX, targetY)))
+         return;
+        _board[targetY, targetX] = 0; // eliminar pieza enemiga (si existe)
+         
+        if(dirY != 0)
+        {
+            if(targetX + 1 < BOARD_SIZE)
+            _board[targetY, targetX+1] = 0;
+            if(targetX - 1 >= 0)
+            _board[targetY, targetX-1] = 0;
+        }
+        else
+        {
+            if(targetY + 1 < BOARD_SIZE)
+            _board[targetY+1, targetX] = 0;
+            if(targetY - 1 >= 0)
+            _board[targetY-1, targetX] = 0;
+        }
+        _piecesMovement.setBoard(_board);
+        _energia--;
+        _energyCountLabel.Text = "Energia: " + _energia.ToString();
+    }
 
     public void _on_ranged_attack_pressed()
     {
@@ -738,6 +604,107 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
         {
             _RangedAttackMode = true;
         }
+    }
+    
+
+
+    private void HandleAttackRangeShow()
+    {
+        // Mostrar opciones de ataque en diagonales
+        moves = new List<Vector2>();
+        int px = (int)_playerPosition.X;
+        int py = (int)_playerPosition.Y;
+        
+        // Solo diagonales
+        List<Vector2> directions = new List<Vector2>
+        {
+            new Vector2(1, 1), new Vector2(1, -1), new Vector2(-1, 1), new Vector2(-1, -1)
+        };
+
+        foreach (var d in directions)
+        {
+            for (int i = 1; i < 5; i++)
+            {
+                int tx = px + (int)d.X;
+                int ty = py + (int)d.Y;
+                if (tx >= 0 && tx < BOARD_SIZE && ty >= 0 && ty < BOARD_SIZE)
+                {
+                    moves.Add(new Vector2(tx, ty));
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        if (moves.Count > 0)
+        {
+            show_dots();
+        }
+    }
+
+    private void HandleAttackRange(InputEvent @event)
+    {
+        // Maneja el clic para ataque en diagonales
+        if (@event is InputEventMouseButton mb && mb.IsPressed() && mb.ButtonIndex == MouseButton.Left)
+        {
+            if (moves != null && moves.Count > 0)
+            {
+                Vector2 local = _pieces.ToLocal(GetGlobalMousePosition());
+                int col = (int)(local.X / CELL_WIDTH);
+                int row = (int)(local.Y / CELL_WIDTH);
+
+                // validar rango
+                if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE)
+                {
+                    Vector2 target = new Vector2(col, row);
+                    if (moves.Contains(target))
+                    {
+                        // dirección relativa normalizada -1/0/1
+                        int px = (int)_playerPosition.X;
+                        int py = (int)_playerPosition.Y;
+                        int dx = Math.Sign(col - px);
+                        int dy = Math.Sign(row - py);
+                        Vector2 dir = new Vector2(dx, dy);
+
+                        // reproducir animación de ataque con rotación en el jugador
+                        if (IsPlayerValid())
+                            _playerInstance.PlayRangedAttack(dir);
+
+                        ExecuteRangeAttack(px, py, dx, dy);
+
+                        // limpiar estado de selección y puntos
+                        ClearDots();
+                        moves = null;
+                        _RangedAttackMode = false;
+                        // refrescar vista
+                        DisplayBoard();
+                    }
+                }
+            }
+        }
+    }
+
+    public void ExecuteRangeAttack(int startX, int startY, int dirX, int dirY)
+    {
+        // Lógica para eliminar piezas en la dirección dada (puede ser más compleja según alcance, obstáculos, etc.)
+        for (int i = 1; i < 5; i++)
+        {
+            int targetX = startX + dirX * i;
+            int targetY = startY + dirY * i;
+
+            if (!_piecesMovement.isValidPosition(new Vector2(targetX, targetY)))
+                break;
+
+            if (_board[targetY, targetX] > 0 && _board[targetY, targetX] <= 6)
+            {
+                _board[targetY, targetX] = 0; // eliminar piezas enemigas
+            }
+        }
+        _piecesMovement.setBoard(_board);
+        _energia--;
+        _energyCountLabel.Text = "Energia: " + _energia.ToString();
     }
 
     public void _on_fire_ball_attack_pressed()
@@ -765,7 +732,41 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
             show_dots();
         }
     }
+     private void HandleAttackFireball(InputEvent @event)
+    {
+        if (@event is InputEventMouseButton mb && mb.IsPressed() && mb.ButtonIndex == MouseButton.Left)
+        {
+            if (moves != null && moves.Count > 0)
+            {
+                Vector2 local = _pieces.ToLocal(GetGlobalMousePosition());
+                int col = (int)(local.X / CELL_WIDTH);
+                int row = (int)(local.Y / CELL_WIDTH);
 
+                if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE)
+                {
+                    Vector2 target = new Vector2(col, row);
+                    if (moves.Contains(target))
+                    {
+                        // Dirección relativa para orientar animación
+                        int px = (int)_playerPosition.X;
+                        int py = (int)_playerPosition.Y;
+                        int dx = Math.Sign(col - px);
+                        int dy = Math.Sign(row - py);
+
+                        if (IsPlayerValid())
+                            _playerInstance.PlayFireball(CellToLocalPosition(col, row));
+
+                        ExecuteFireballAttack(col, row);
+
+                        ClearDots();
+                        moves = null;
+                        _FireBallAttackMode = false;
+                        DisplayBoard();
+                    }
+                }
+            }
+        }
+    }
     public void ExecuteFireballAttack(int targetCol, int targetRow)
     {
         // Elimina enemigos en un área 3x3 alrededor del objetivo
@@ -781,9 +782,163 @@ private void AddEnemyInstanceToBoard(Node2D inst, int col, int row)
             }
         }
         _piecesMovement.setBoard(_board);
+        _energia-=2; // la bola de fuego consume más energía
+        _energyCountLabel.Text = "Energia: " + _energia.ToString();
     }
 
+    public void _on_move_1_pressed()
+    {
+        _MeleaAttackMode = false;
+        _RangedAttackMode = false;
+        _FireBallAttackMode = false;
+        _MovimentMode = false;
+        // Iniciar selección de 1 movimiento: el randomizador propone opciones y el jugador elige
+        StartMoveSelection(1);
+    }
+       public void _on_move_2_pressed()
+    {
+        _MeleaAttackMode = false;
+        _RangedAttackMode = false;
+        _FireBallAttackMode = false;
+        _MovimentMode = false;
+        // Iniciar selección de 2 movimientos secuenciales
+        StartMoveSelection(2);
+    }
 
+    private void MoveRandomSteps(int steps)
+    {
+        if (!IsPlayerValid()) return;
+        _piecesMovement.setBoard(_board);
+        for (int s = 0; s < steps; s++)
+        {
+            List<Vector2> possible = _piecesMovement.get_all_possible_player_moves((int)_playerPosition.X, (int)_playerPosition.Y);
+            if (possible == null || possible.Count == 0) break;
+            Vector2 chosen = _piecesMovement.get_random_move(possible);
+            if (chosen == Vector2.Zero) break;
+            ExecutePlayerMovement(chosen);
+        }
+    }
+
+    // Inicia el flujo de selección: genera candidatos aleatorios y muestra puntos
+    private void StartMoveSelection(int selections)
+    {
+        if (!IsPlayerValid()) return;
+        _pendingMoveSelections = selections;
+        _MoveSelectionMode = true;
+        // elegir patrón y mostrar TODOS los movimientos válidos de ese patrón
+        _currentRandomPattern = random.Next(1, 7);
+        var all = GetMovesForPattern(_currentRandomPattern);
+        moves = new List<Vector2>(all);
+        if (moves != null && moves.Count > 0)
+            show_dots();
+        else
+        {
+            // no hay movimientos disponibles
+            _MoveSelectionMode = false;
+            _pendingMoveSelections = 0;
+        }
+    }
+
+    // Devuelve todas las casillas válidas y vacías según el patrón aleatorio actual
+    private List<Vector2> GetMovesForPattern(int pattern)
+    {
+        _piecesMovement.setBoard(_board);
+        int px = (int)_playerPosition.X;
+        int py = (int)_playerPosition.Y;
+        List<Vector2> possible = null;
+
+        switch (pattern)
+        {
+            case 1:
+                possible = _piecesMovement.get_all_pawn_moves(px, py);
+                break;
+            case 2:
+                possible = _piecesMovement.get_all_knight_moves(px, py);
+                break;
+            case 3:
+                possible = _piecesMovement.get_all_bishop_moves(px, py);
+                break;
+            case 4:
+                possible = _piecesMovement.get_all_rook_moves(px, py);
+                break;
+            case 5:
+                possible = _piecesMovement.get_all_queen_moves(px, py);
+                break;
+            case 6:
+                possible = _piecesMovement.get_all_king_moves(px, py);
+                break;
+            default:
+                possible = _piecesMovement.get_all_possible_player_moves(px, py);
+                break;
+        }
+
+        if (possible == null) return new List<Vector2>();
+
+        List<Vector2> filtered = new List<Vector2>();
+        foreach (var v in possible)
+        {
+            int x = (int)v.X;
+            int y = (int)v.Y;
+            if (_piecesMovement.isValidPosition(v) && _board[y, x] == 0)
+                filtered.Add(v);
+        }
+        return filtered;
+    }
+
+    // Maneja el clic del jugador para elegir uno de los candidatos generados
+    private void HandleMoveSelection(InputEvent @event)
+    {
+        if (@event is InputEventMouseButton mb && mb.IsPressed() && mb.ButtonIndex == MouseButton.Left)
+        {
+            if (moves == null || moves.Count == 0) return;
+
+            Vector2 local = _pieces.ToLocal(GetGlobalMousePosition());
+            int col = (int)(local.X / CELL_WIDTH);
+            int row = (int)(local.Y / CELL_WIDTH);
+
+            if (col < 0 || col >= BOARD_SIZE || row < 0 || row >= BOARD_SIZE) return;
+
+            Vector2 target = new Vector2(col, row);
+            if (moves.Contains(target))
+            {
+                // mover jugador a la casilla seleccionada
+                ExecutePlayerMovement(target);
+
+                // decrementar selecciones pendientes
+                _pendingMoveSelections--;
+
+                ClearDots();
+                moves = null;
+
+                if (_pendingMoveSelections > 0)
+                {
+                    // generar nuevo patrón aleatorio y mostrar TODOS sus movimientos válidos
+                    _currentRandomPattern = random.Next(1, 7);
+                    var all = GetMovesForPattern(_currentRandomPattern);
+                    moves = new List<Vector2>(all);
+                    if (moves != null && moves.Count > 0)
+                        show_dots();
+                    else
+                    {
+                        // no hay más movimientos posibles
+                        _MoveSelectionMode = false;
+                        _pendingMoveSelections = 0;
+                    }
+                }
+                else
+                {
+                    // acabado
+                    _MoveSelectionMode = false;
+                    _pendingMoveSelections = 0;
+                    _randomCandidates.Clear();
+                }
+
+                DisplayBoard();
+                _energia--;
+                _energyCountLabel.Text = "Energia: " + _energia.ToString();
+            }
+        }
+    }
 
     public void gameOver(){
         GetTree().ChangeSceneToFile("res://Scenes/GameOver.tscn"); 

@@ -185,7 +185,7 @@ animations = [{
 "duration": 1.0,
 "texture": ExtResource("8_emxbc")
 }],
-"loop": true,
+"loop": false,
 "name": &"fireBall",
 "speed": 15.0
 }, {

@@ -76,17 +76,30 @@ public partial class ReyBranco : CharacterBody2D
         setAnimation("shoot");
     }
 
-
-
-    // NUEVO: devuelve las 4 direcciones relativas alrededor del jugador (orden: arriba, derecha, abajo, izquierda)
-    public List<Vector2> GetAttackDirections()
+    public void PlayFireball(Vector2 targetLocal, double duration = 0.5)
     {
-        return new List<Vector2> {
-            new Vector2(0, -1),   // arriba
-            new Vector2(1, 0),    // derecha
-            new Vector2(0, 1),    // abajo
-            new Vector2(-1, 0),   // izquierda
-        };
-    }
+        // Crea un sprite temporal (bola de fuego) y lo mueve desde la posición actual hasta targetLocal
+        if (GetParent() == null) return;
 
+        var fire = new Sprite2D();
+        Texture2D tex = null;
+        try
+        {
+            tex = GD.Load<Texture2D>("res://Assets/Habilidades/bolaDiFuego.png");
+        }
+        catch { tex = null; }
+        fire.Texture = tex;
+        // usar la posición local del rey (ya en coordenadas del padre)
+        fire.Position = this.Position;
+        GetParent().AddChild(fire);
+
+        var tween = CreateTween();
+        tween.TweenProperty(fire, "position", targetLocal, duration)
+            .SetTrans(Tween.TransitionType.Quad)
+            .SetEase(Tween.EaseType.Out);
+        tween.TweenCallback(Callable.From(() => { if (IsInstanceValid(fire)) fire.QueueFree(); }));
+
+        // reproducir animación de lanzamiento si existe
+        setAnimation("fireBall");
+    }
 }
