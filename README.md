@@ -1,1 +1,1 @@
-Este proyecto es un mini-juego creado para un Game Jam que se organizó en el instituto Puig Castellar en el curso de desarrollo de videojuegos. En este caso, la temática del _Jam_ es_ rodeados de enemigos._
+Este proyecto es un mini-juego creado para un Game Jam que se organizó en el instituto Puig Castellar en el curso de desarrollo de videojuegos. En este caso, la temática del _Jam_ es _rodeados de enemigos._
